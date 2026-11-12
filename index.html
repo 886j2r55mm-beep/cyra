@@ -1,0 +1,1244 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="cyra-standalone" content="1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cyra">
+<meta name="theme-color" content="#FBF7FA">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Cyra</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: one calm mobile column — "today" on top, then week, calendar, insights, settings */
+:root{
+  --bg:#FBF7FA; --surface:#FFFFFF; --ink:#2A2233; --muted:#6E6478; --line:#EADFE8; --accent:#7A4E8C; --onfill:#2A2233;
+  --c-per:#F4A6B7; --c-fol:#C9E4A7; --c-ov:#7CC6E8; --c-lut:#B3A3E0;
+  --warn-bg:#FFF4E5; --warn-ink:#8A4B08; --go:#3B9A4A; --mid:#E0A100; --slow:#E5533D;
+  --f-display:"Nunito",ui-rounded,system-ui,sans-serif; --f-body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#16121B; --surface:#211B28; --ink:#F2ECF5; --muted:#AFA4B9; --line:#352C3E; --accent:#C9A3DA; --warn-bg:#3A2A14; --warn-ink:#F5C98A; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#16121B; --surface:#211B28; --ink:#F2ECF5; --muted:#AFA4B9; --line:#352C3E; --accent:#C9A3DA; --warn-bg:#3A2A14; --warn-ink:#F5C98A; color-scheme:dark}
+.logo .bolt{display:none}
+.heartinfo{display:flex;flex-direction:column;gap:4px;background:var(--surface);border:1px dashed var(--c-per);border-radius:12px;padding:10px 12px;font-size:14px}
+.latenote{width:100%;box-sizing:border-box;font-weight:700;text-align:left}
+.calmid{display:flex;flex-direction:column;align-items:center;gap:4px}
+.calmid .chip{padding:3px 12px;font-size:12px;font-weight:800}
+#cal{touch-action:pan-y}
+@media (prefers-reduced-motion: no-preference){#cal.slide-l{animation:sl .22s ease-out}#cal.slide-r{animation:sr .22s ease-out}@keyframes sl{from{transform:translateX(30px);opacity:.3}to{transform:none;opacity:1}}@keyframes sr{from{transform:translateX(-30px);opacity:.3}to{transform:none;opacity:1}}}
+.perq{width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px}
+.perq .pq{font-size:17px;font-weight:800}
+.yn.yes[aria-pressed="true"]{background:var(--c-per);border-color:var(--c-per);color:var(--onfill)}
+.yn.no[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.sheet .perq{background:var(--surface)}
+.sheet .perq.row{flex-direction:column;flex-wrap:nowrap}
+.sheet .perq.row .btn{min-width:0}
+.topr .seg{display:none}
+.prof{display:flex;align-items:center;gap:14px}
+.avatar{width:56px;height:56px;border-radius:50%;background:var(--c-per);color:var(--onfill);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;flex:none}
+.ph1{font-size:22px;font-weight:800;line-height:1.2}
+.sets{display:flex;flex-direction:column;gap:8px}
+.sk{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;padding:0 4px}
+.glist{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:0 16px;margin-bottom:10px}
+.srow{display:flex;flex-direction:column;gap:10px;padding:14px 0;border-bottom:1px solid var(--line)}
+.srow:last-child{border-bottom:0}
+.sline{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:16px;font-weight:700;width:100%;background:none;border:0;color:var(--ink);font-family:var(--f-body);padding:0;text-align:left;cursor:pointer}
+.sline:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px}
+.sline .sv{font-weight:600;color:var(--muted);font-size:15px;white-space:nowrap}
+.sline.danger{color:var(--slow)}
+.sw{position:relative;width:48px;height:28px;border-radius:999px;border:0;background:var(--line);cursor:pointer;flex:none;padding:0}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:left .15s}
+.sw[aria-checked="true"]{background:var(--c-ov)}
+.sw[aria-checked="true"]::after{left:23px}
+.sw:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sedit{display:flex;gap:8px}
+.sedit .duoin{flex:1}
+.sedit .btn{width:auto}
+.day .hrt{position:absolute;top:1px;right:3px;font-size:9px;line-height:1}
+.lock{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow:auto}
+.lockin{width:100%;max-width:300px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.ldots{display:flex;gap:14px}
+.ldots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink)}
+.ldots i.on{background:var(--ink)}
+.keypad{display:grid;grid-template-columns:repeat(3,72px);gap:14px}
+.keypad button{width:72px;height:72px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:800 26px var(--f-body);cursor:pointer}
+.keypad button.ghostk{border:0;background:transparent;font-size:15px}
+.keypad button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.partner #profCard,.partner #setCard,.partner #dataCard{display:none!important}
+#app{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;gap:4px;background:var(--surface);border-top:1px solid var(--line);padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.tabbar button{flex:1;max-width:120px;border:0;background:transparent;color:var(--muted);font:700 12px var(--f-body);display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border-radius:12px;cursor:pointer}
+.tabbar button svg{width:24px;height:24px}
+.tabbar button[aria-current="page"]{color:var(--ink);font-weight:800}
+.tabbar button[aria-current="page"] svg{color:var(--accent)}
+.tabbar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body[data-tab="heute"] #app [data-tab]:not([data-tab="heute"]),body[data-tab="kalender"] #app [data-tab]:not([data-tab="kalender"]),body[data-tab="active"] #app [data-tab]:not([data-tab="active"]),body[data-tab="ich"] #app [data-tab]:not([data-tab="ich"]){display:none!important}
+.tabhead{font-size:26px;font-weight:800;margin:0}
+.chk-card{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.chk-card .cq{font-size:16px;font-weight:800}
+.chk-card .k2{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+.chk-card .why{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.chk-card .why .wt2{font-weight:800;font-size:15px}
+.chk-card .why.doc{font-size:14px}
+.chk-card .chip{font-size:13px;padding:7px 12px}
+.wish{display:flex;flex-direction:column;gap:12px}
+.wish .pk{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.wish .wt{font-size:20px;font-weight:800;line-height:1.25}
+.wstrip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.wd2{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;color:var(--muted);font-weight:700}
+.wd2 .c{width:100%;max-width:40px;aspect-ratio:1;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--onfill);font-variant-numeric:tabular-nums;position:relative}
+.wd2.ov .c{outline:2px solid var(--ink);outline-offset:1px}
+.wd2.today span.l{color:var(--ink)}
+.wd2 .hm{font-size:11px;line-height:1;min-height:12px}
+.wrow{display:flex;gap:8px}
+.wrow .btn{flex:1;width:auto;padding:10px 8px;font-size:14px}
+.wform{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.wform input[type=date]{font:700 16px var(--f-body);color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;box-sizing:border-box}
+.duohd{font-weight:800;font-size:14px;color:var(--muted)}
+.duotip{display:flex;flex-direction:column;gap:8px;border-color:var(--c-ov)}
+.duotip .pk{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.duotip .dtt{font-size:18px;font-weight:800;line-height:1.35}
+.codebox{font:700 15px ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px dashed var(--accent);border-radius:12px;padding:12px;word-break:break-all;user-select:all}
+.duoin{font:600 16px var(--f-body);color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;width:100%;box-sizing:border-box}
+.chk{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px}
+.chk input{width:20px;height:20px;accent-color:var(--c-ov)}
+.steps{margin:0;padding-left:20px;font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.partner #quick,.partner #wishCard,.partner .seg,.partner #trainCard,.partner #journal,.partner #tStats,.partner #quick,.partner section[aria-label="Dein Ziel"],.partner section[aria-label="Dein Zyklus in Zahlen"],.partner .pset:not(#duoLeave),.partner #pillBtn,.partner .sheet .row,.partner #sample,.partner #pillCard details{display:none!important}
+.duowait #app>section:not(#duoLeave){display:none!important}
+.topr{display:flex;align-items:center;gap:8px}
+.bell{position:relative;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+.bell svg{width:20px;height:20px}
+.bell:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:999px;background:var(--slow);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;box-sizing:border-box}
+.inbox{display:flex;flex-direction:column;gap:10px}
+.note-i{border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.note-i.new{border-color:var(--c-ov);background:color-mix(in srgb, var(--c-ov) 10%, var(--surface))}
+.note-i .nd{width:10px;height:10px;border-radius:50%;flex:none;margin-top:6px}
+.note-i .nt{font-weight:800;font-size:15px}
+.note-i .ns{font-size:14px}
+.note-i .nm{font-size:12px;color:var(--muted);margin-top:2px}
+.sport .logo .bolt{display:inline}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:520px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 48px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-display);font-weight:800;margin:0;text-wrap:balance}
+h2{font-size:18px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-size:24px;font-weight:600;letter-spacing:.01em}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--muted);font:500 13px var(--f-body);padding:6px 12px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px}
+.hero{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.ringbox{position:relative;width:220px;max-width:100%;aspect-ratio:1}
+.ringbox svg{width:100%;height:100%}
+.ringc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ringc .big{font-family:var(--f-display);font-size:40px;font-weight:600;line-height:1}
+.ringc .ph{font-size:14px;color:var(--muted);margin-top:4px}
+.fert{display:inline-flex;align-items:center;gap:8px;font-weight:500;font-size:14px;padding:6px 12px;border-radius:999px;background:var(--bg);border:1px solid var(--line)}
+.bars{display:inline-flex;gap:3px}.bars i{width:6px;height:14px;border-radius:2px;background:var(--line)}
+.bars i.on{background:var(--c-ov)}
+.fertbox{width:100%;max-width:260px;box-sizing:border-box;align-self:center;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px}
+.fertbox .fl{font-size:17px;font-weight:800;color:var(--ink);line-height:1.2}
+.fertbox .fv{font-size:15px;font-weight:700;color:var(--muted);line-height:1.2}
+.fertbox .fseg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.fertbox .fseg i{height:10px;border-radius:4px;background:var(--line)}
+.fertbox .fseg i.on{background:var(--c-ov)}
+.fertbox .flab{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;font-size:10px;white-space:nowrap;color:var(--muted);line-height:1.2}
+.fertbox .flab span.cur{color:var(--ink);font-weight:800}
+.fertbox .fn{font-size:12px;color:var(--muted)}
+.sheet .fertbox{background:var(--surface)}
+.sheet .fertbox{align-self:flex-start}
+.train{display:flex;flex-direction:column;gap:8px;padding:14px 16px}
+.train .tr{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tpill{display:inline-flex;align-items:center;gap:8px;color:#fff;border-radius:999px;padding:8px 16px 8px 12px;font-size:18px;font-weight:800}
+.tpill svg{width:20px;height:20px}
+.twarn{display:inline-flex;gap:5px;align-items:center;color:var(--warn-ink);font-size:14px;font-weight:800}
+.twarn svg{flex:none;width:17px;height:17px}
+.train .ts{font-size:14px;color:var(--muted)}
+.train .tq{font-size:20px;font-weight:800;line-height:1.25}
+.tint{font-size:14px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.tint b{color:var(--ink);font-weight:800}
+.coach{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;font-size:15px}
+.coach .ck{font-weight:800}
+.coach .ck.warn{color:var(--warn-ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.cd{background:var(--bg);border-radius:14px;padding:12px;text-align:left;border:1px solid var(--line)}
+.cd .l{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.cd .v{font-family:var(--f-display);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.cd .s{font-size:12px;color:var(--muted)}
+.btn{font:600 15px var(--f-body);border:0;border-radius:14px;padding:12px 16px;cursor:pointer;background:var(--ink);color:var(--bg);width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:focus-visible,.seg button:focus-visible,.day:focus-visible,.chip:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.phase{display:flex;flex-direction:column;gap:10px}
+.phase .tag{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.phase p.lead{font-family:var(--f-display);font-size:20px;font-weight:500;margin:0;line-height:1.35}
+details{border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;font-weight:600;font-size:14px;list-style:none;display:flex;justify-content:space-between}
+summary::after{content:"+";color:var(--muted)} details[open] summary::after{content:"–"}
+.dl{display:grid;gap:10px;margin-top:10px;font-size:14px}
+.dl b{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.wd{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
+.wd .c{width:100%;max-width:40px;aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--onfill);font-variant-numeric:tabular-nums}
+.wd.today .c{outline:2px solid var(--ink);outline-offset:1px}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.calhead button{border:1px solid var(--line);background:var(--bg);color:var(--ink);width:36px;height:36px;border-radius:12px;cursor:pointer;font-size:18px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal .h{font-size:11px;color:var(--muted);text-align:center;padding-bottom:4px;font-weight:600}
+.day{aspect-ratio:1;border-radius:12px;border:2px solid transparent;background:transparent;color:var(--ink);font:500 14px var(--f-body);cursor:pointer;position:relative;padding:0;font-variant-numeric:tabular-nums}
+.day.fill{color:var(--onfill)}
+.day.pred{border-style:dashed}
+.day.today{box-shadow:inset 0 0 0 2px var(--ink)}
+.day.sel{outline:2px solid var(--accent);outline-offset:1px}
+.day .ov{position:absolute;bottom:4px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--onfill)}
+.day:disabled{cursor:default}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sheet{margin-top:14px;padding:14px;border-radius:16px;background:var(--bg);border:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.sheet .row{display:flex;gap:8px;flex-wrap:wrap}.sheet .row .btn{flex:1;min-width:140px;width:auto}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.alert{background:var(--warn-bg);color:var(--warn-ink);border-radius:14px;padding:12px 14px;font-size:14px}
+.banner{background:var(--surface);border:1px dashed var(--accent);border-radius:14px;padding:12px 14px;font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 14px;font:500 14px var(--f-body);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.muted{color:var(--muted);font-size:13px}
+.jhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.jhead .btn{width:auto;padding:10px 16px}
+.jform{display:flex;flex-direction:column;gap:14px;margin-top:14px;padding:14px;border-radius:16px;background:var(--bg);border:1px solid var(--line)}
+.jf{display:flex;flex-direction:column;gap:6px}
+.jf>label,.jf>.lab{font-size:13px;font-weight:700}
+.jrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.jf input[type=date],.jf input[type=number],.jf textarea{font:500 15px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;box-sizing:border-box}
+.jf textarea{min-height:60px;resize:vertical}
+.jf input[type=range]{width:100%;accent-color:var(--c-ov)}
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.scale button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:10px 0;font:800 16px var(--f-body);cursor:pointer}
+.scale button[aria-pressed="true"]{background:var(--c-ov);border-color:var(--c-ov);color:var(--onfill)}
+.scale-l{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.jerr{font-size:13px;color:var(--slow);font-weight:700}
+.entries{display:flex;flex-direction:column;margin-top:12px}
+.entry{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.entry .ed{font-size:12px;color:var(--muted)}
+.entry .perf{font-weight:800;font-variant-numeric:tabular-nums}
+.entry .del{border:0;background:transparent;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 6px;border-radius:8px}
+.ptab{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.ptab th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;text-align:left;padding:6px 4px}
+.ptab td{padding:9px 4px;border-top:1px solid var(--line)}
+.ptab tr.best td{font-weight:800}
+.ptab td:first-child{white-space:nowrap}
+#tStatCurve{width:100%;height:auto;display:block;margin-top:6px}
+.exnote{font-size:12px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.note{font-size:12px;color:var(--muted);text-align:center}
+.onb{min-height:100%;justify-content:flex-start}
+.onb .prog{display:grid;gap:5px}
+.onb .prog i{height:5px;border-radius:3px;background:var(--line)}
+.onb .prog i.on{background:var(--c-ov)}
+.onb .stepn{font-size:13px;color:var(--muted);font-weight:700}
+.onb h1{font-size:28px;font-weight:800;line-height:1.2}
+.onb .sub{color:var(--muted);margin:0}
+.ops{display:flex;flex-direction:column;gap:10px}
+.op{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:16px;padding:14px 16px;font:700 16px var(--f-body);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.op small{font-weight:500;font-size:13px;color:var(--muted)}
+.op[aria-pressed="true"]{border-color:var(--c-ov);background:color-mix(in srgb, var(--c-ov) 18%, var(--surface))}
+.op:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.onb input[type=date],.onb input[type=time],.pset input[type=date],.pset input[type=time]{font:700 18px var(--f-body);color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;width:100%;box-sizing:border-box}
+.onb .nav{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.linkbtn{border:0;background:transparent;color:var(--muted);font:700 14px var(--f-body);cursor:pointer;padding:8px;text-decoration:underline;text-underline-offset:3px}
+.pillcard{display:flex;flex-direction:column;gap:10px}
+.pillcard .pk{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.pillcard .pt{font-size:24px;font-weight:800;line-height:1.15}
+.pillcard.due{background:var(--warn-bg);border-color:var(--mid)}
+.pillcard.due .pt{color:var(--warn-ink)}
+.alarm{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);color:var(--bg);padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
+.alarm .at{font-size:20px;font-weight:800}
+.alarm .row{display:flex;gap:8px;max-width:520px}
+.alarm .btn{background:var(--bg);color:var(--ink)}
+.alarm .btn.ghost{background:transparent;color:var(--bg);border-color:var(--bg)}
+@media (prefers-reduced-motion: no-preference){.alarm{animation:up .3s ease-out}@keyframes up{from{transform:translateY(100%)}to{transform:none}}}
+.pset{display:flex;flex-direction:column;gap:10px}
+.pstrip{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px}
+.pstrip i{aspect-ratio:1;border-radius:50%;background:color-mix(in srgb, var(--c-fol) 30%, var(--line))}
+.pstrip i.done{background:var(--c-fol)}
+.pstrip i.pause{background:transparent;border:2px dashed var(--c-per)}
+.pstrip i[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pstrip i.now{outline:2px solid var(--ink);outline-offset:1px}
+@media (prefers-reduced-motion: no-preference){.card,.btn,.day{transition:background .2s,border-color .2s}}
+</style>
+
+<div class="wrap onb" id="onb" hidden></div>
+<div class="alarm" id="alarm" role="alertdialog" aria-labelledby="alarmT" hidden><div class="at" id="alarmT">⏰ Zeit für deine Pille</div><div id="alarmS" style="font-size:14px;opacity:.85"></div><div class="row"><button type="button" class="btn" id="alarmOk">Genommen ✓</button><button type="button" class="btn ghost" id="alarmSnz">In 10 Min.</button></div></div>
+<div class="lock" id="lock" role="dialog" aria-modal="true" aria-labelledby="lockT" hidden>
+  <div class="lockin">
+    <div class="logo" id="lockLogo"></div>
+    <div class="ph1" id="lockT">Code eingeben</div>
+    <div class="ldots" id="lockDots"><i></i><i></i><i></i><i></i></div>
+    <div class="jerr" id="lockErr" aria-live="polite"></div>
+    <div class="keypad" id="keypad"></div>
+    <button type="button" class="linkbtn" id="lockForgot">Code vergessen?</button>
+    <div id="lockReset" hidden style="display:flex;flex-direction:column;gap:10px;text-align:center"><p class="muted" style="margin:0">Ohne Code kannst du Cyra nur neu starten. Dabei werden alle deine Daten gelöscht.</p><button type="button" class="btn ghost" id="lockWipe">Sperre aufheben und alles löschen</button></div>
+  </div>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="Bereiche" hidden>
+  <button type="button" data-t="heute"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg><span>Heute</span></button>
+  <button type="button" data-t="kalender"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Kalender</span></button>
+  <button type="button" data-t="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg><span>Active</span></button>
+  <button type="button" data-t="ich"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span>Ich</span></button>
+</nav>
+<div class="wrap" id="app">
+  <div class="top">
+    <div class="logo"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="9" fill="none" stroke="var(--c-lut)" stroke-width="4"/><path d="M13 4 A9 9 0 0 1 21.5 10" fill="none" stroke="var(--c-per)" stroke-width="4"/><path d="M21.5 10 A9 9 0 0 1 20 19" fill="none" stroke="var(--c-fol)" stroke-width="4"/><path d="M20 19 A9 9 0 0 1 14 22" fill="none" stroke="var(--c-ov)" stroke-width="4"/><path class="bolt" d="M14.2 7.2 9.4 13.8h3.2l-1.2 5 5.2-7h-3.2l1.4-4.6z" fill="var(--ink)"/></svg>Cyra</div>
+    <div class="topr">
+    <div class="seg" role="group" aria-label="Modus">
+      <button type="button" id="mNormal" aria-pressed="true">Normal</button>
+      <button type="button" id="mSport" aria-pressed="false">Cyra Active</button>
+    </div>
+    <span class="duohd" id="duoHd" hidden></span>
+    <button type="button" class="bell" id="bell" aria-label="Benachrichtigungen" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="badge" id="bellN" hidden>0</span></button>
+    </div>
+  </div>
+
+  <section class="card inbox" id="inbox" aria-label="Benachrichtigungen" hidden>
+    <h2>Benachrichtigungen</h2>
+    <div id="inboxList"></div>
+  </section>
+
+  <div id="sample" class="banner" hidden><span>Du siehst Beispieldaten. Trag deine letzte Periode ein, dann rechnet Cyra mit deinen Zahlen.</span></div>
+
+  <section class="card train" id="trainCard" aria-label="Training heute" hidden>
+    <h2 class="tq">Wie solltest du heute trainieren?</h2>
+    <div class="tr"><span class="tpill" id="tPill"><span id="tIco"></span><span id="tTitle"></span></span>
+    <span class="tint" id="tInt"></span></div>
+    <div class="coach" id="tCoach"></div>
+  </section>
+
+  <div class="banner" id="duoMsg" hidden></div>
+  <section class="card duotip" id="duoTip" aria-label="Für dich als Partner" hidden>
+    <div class="pk" id="duoTipK">Für dich als Partner</div>
+    <div class="dtt" id="duoTipT"></div>
+    <div class="muted">Nicht jede Stimmung kommt vom Zyklus – frag nach, was los ist.</div>
+  </section>
+
+  <section class="card hero" aria-label="Heute">
+    <div class="ringbox"><svg id="ring" viewBox="0 0 220 220" role="img" aria-label="Zyklusring"></svg>
+      <div class="ringc"><div class="big" id="cday">–</div><div class="ph" id="cphase">Noch keine Daten</div></div></div>
+    <div class="alert latenote" id="lateNote" hidden></div>
+    <div class="fertbox" id="fert"></div>
+    <div class="grid2">
+      <div class="cd"><div class="l">Eisprung</div><div class="v" id="ovIn">–</div><div class="s" id="ovDate"></div></div>
+      <div class="cd"><div class="l">Periode</div><div class="v" id="perIn">–</div><div class="s" id="perDate"></div></div>
+    </div>
+    <button type="button" class="btn" id="quick">Periode hat heute begonnen</button>
+  </section>
+
+  <section class="card wish" id="wishCard" aria-label="Kinderwunsch" hidden>
+    <div class="pk">💕 Kinderwunsch</div>
+    <div class="wt" id="wishT"></div>
+    <div class="wstrip" id="wishStrip"></div>
+    <div class="wrow"><button type="button" class="btn ghost" id="wLhBtn">+ Ovulationstest</button><button type="button" class="btn ghost" id="wHeartBtn">+ Herz-Tag ❤️</button></div>
+    <div class="wform" id="wForm" hidden></div>
+    <div class="muted" id="wishS"></div>
+  </section>
+
+  <section class="card phase" aria-label="Deine Phase">
+    <div class="tag"><span class="dot" id="pdot"></span><span id="pname">Phase</span></div>
+    <p class="lead" id="plead"></p>
+    <div class="muted" id="pLate" hidden>Deine Periode ist noch nicht eingetragen, deshalb bleibst du in der Lutealphase. Wenn eine Schwangerschaft möglich ist, bringt ein Test Klarheit.</div>
+    <details><summary>Ernährung</summary><div class="dl" id="peat"></div></details>
+    <details><summary>Beschwerden und was hilft</summary><div class="dl" id="pcare"></div></details>
+    <details id="trainBox" hidden><summary>Training heute</summary><div class="dl" id="ptrain"></div></details>
+    <details><summary>Was passiert im Körper</summary><div class="dl" id="pbody"></div></details>
+  </section>
+
+  <section class="card" id="journal" aria-label="Trainingsjournal" hidden>
+    <div class="jhead"><h2>Trainingsjournal</h2><button type="button" class="btn" id="jOpen">+ Training eintragen</button></div>
+    <form class="jform" id="jForm" hidden novalidate>
+      <div class="jrow">
+        <div class="jf"><label for="jDate">Datum</label><input type="date" id="jDate"></div>
+        <div class="jf"><label for="jDur">Dauer (Min.)</label><input type="number" id="jDur" min="5" max="300" step="5" placeholder="90"></div>
+      </div>
+      <div class="jf"><span class="lab">Art</span><div class="chips" id="jType"><button type="button" class="chip" data-v="Training" aria-pressed="true">Training</button><button type="button" class="chip" data-v="Spiel" aria-pressed="false">Spiel</button><button type="button" class="chip" data-v="Kraft" aria-pressed="false">Kraft</button><button type="button" class="chip" data-v="Lauf" aria-pressed="false">Lauf</button><button type="button" class="chip" data-v="Andere" aria-pressed="false">Andere</button></div></div>
+      <div class="jf"><label for="jEff">Anstrengung: <span id="jEffV">6</span> von 10</label><input type="range" id="jEff" min="1" max="10" step="1" value="6"><div class="scale-l"><span>locker</span><span>am Limit</span></div></div>
+      <div class="jf"><span class="lab">Kraft / Energie</span><div class="scale" id="jPow" data-k="power"></div><div class="scale-l"><span>leer</span><span>voller Tank</span></div></div>
+      <div class="jf"><span class="lab">Leistung</span><div class="scale" id="jPerf" data-k="perf"></div><div class="scale-l"><span>schlecht</span><span>top</span></div></div>
+      <div class="jrow">
+        <div class="jf"><label for="jSleep">Schlaf letzte Nacht (Std.)</label><input type="number" id="jSleep" min="0" max="14" step="0.5" placeholder="7.5"></div>
+        <div class="jf"><span class="lab">Schlafqualität</span><div class="scale" id="jSQ" data-k="sleepQ"></div></div>
+      </div>
+      <div class="jf"><span class="lab">Beschwerden</span><div class="chips" id="jPain"><button type="button" class="chip" data-v="Krämpfe" aria-pressed="false">Krämpfe</button><button type="button" class="chip" data-v="Müde Beine" aria-pressed="false">Müde Beine</button><button type="button" class="chip" data-v="Kopfweh" aria-pressed="false">Kopfweh</button><button type="button" class="chip" data-v="Rücken" aria-pressed="false">Rücken</button><button type="button" class="chip" data-v="Verletzung" aria-pressed="false">Verletzung</button></div></div>
+      <div class="jf"><label for="jNote">Notiz</label><textarea id="jNote" placeholder="Sprints liefen super, Knie etwas gespürt"></textarea></div>
+      <div class="jerr" id="jErr" hidden></div>
+      <div class="jrow"><button type="button" class="btn ghost" id="jCancel">Abbrechen</button><button type="submit" class="btn">Speichern</button></div>
+    </form>
+    <div class="entries" id="jList"></div>
+  </section>
+
+  <section class="card" id="tStats" aria-label="Deine Trainings-Statistik" hidden>
+    <div class="exnote" id="tStatEx" hidden>Beispiel – erscheint mit deinen eigenen Trainings</div>
+    <h2 id="tStatHead" style="margin:4px 0 12px">Deine Trainings-Statistik</h2>
+    <div style="overflow-x:auto"><table class="ptab" id="tStatTab"></table></div>
+    <h3 style="font-size:16px;margin-top:18px">Leistung über deinen Zyklus</h3>
+    <svg id="tStatCurve" viewBox="0 0 320 150" role="img" aria-label="Leistung je Zyklustag"></svg>
+    <p class="muted" style="margin:6px 0 0" id="tStatNote"></p>
+  </section>
+
+  <section class="card" aria-label="Diese Woche">
+    <h2 style="margin-bottom:12px">Diese Woche</h2>
+    <div class="week" id="week"></div>
+  </section>
+
+  <section class="card" aria-label="Kalender">
+    <div class="calhead"><button type="button" id="prev" aria-label="Vorheriger Monat">‹</button><div class="calmid"><h2 id="mlabel">Monat</h2><button type="button" class="chip" id="calToday" hidden>Heute</button></div><button type="button" id="next" aria-label="Nächster Monat">›</button></div>
+    <div class="cal" id="cal"></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--c-per)"></i>Periode</span>
+      <span><i class="dot" style="border:2px dashed var(--c-per);width:8px;height:8px"></i>erwartet</span>
+      <span><i class="dot" style="background:var(--c-fol)"></i>Follikel</span>
+      <span><i class="dot" style="background:var(--c-ov)"></i>Eisprung / fruchtbar</span>
+      <span><i class="dot" style="background:var(--c-lut)"></i>Luteal</span>
+    </div>
+    <div class="sheet" id="sheet" hidden></div>
+  </section>
+
+  <section class="card" aria-label="Dein Zyklus in Zahlen">
+    <h2 style="margin-bottom:12px">Dein Zyklus in Zahlen</h2>
+    <div class="stats">
+      <div class="cd"><div class="l">Zyklus</div><div class="v" id="sLen">–</div><div class="s">Tage im Schnitt</div></div>
+      <div class="cd"><div class="l">Periode</div><div class="v" id="sPer">–</div><div class="s">Tage im Schnitt</div></div>
+      <div class="cd"><div class="l">Erfasst</div><div class="v" id="sCnt">–</div><div class="s">Zyklen</div></div>
+    </div>
+    <div id="alerts" style="display:flex;flex-direction:column;gap:8px;margin-top:12px"></div>
+  </section>
+
+  <section class="card prof" id="profCard" aria-label="Profil">
+    <span class="avatar" id="profAv">C</span>
+    <div><div class="ph1" id="profHi">Hallo 👋</div><div class="muted" id="profSub"></div></div>
+  </section>
+  <div class="sets" id="setCard"></div>
+
+  <section class="card" aria-label="Dein Ziel" style="display:flex;flex-direction:column;gap:10px">
+    <h2>Dein Ziel</h2>
+    <p class="muted" style="margin:0">Bestimmt, wie Cyra dich zum Eisprung informiert. Jederzeit änderbar.</p>
+    <div class="chips" id="goals">
+      <button type="button" class="chip" data-g="wish" aria-pressed="false">Kinderwunsch</button>
+      <button type="button" class="chip" data-g="avoid" aria-pressed="false">Schwangerschaft vermeiden</button>
+      <button type="button" class="chip" data-g="" aria-pressed="true">Kein Ziel</button>
+    </div>
+    <p class="muted" style="margin:0" id="goalMsg"></p>
+    <div class="perq" id="goalAsk" hidden><div class="pq">Hast du die Pille abgesetzt?</div><div class="muted">Mit der Pille hast du keinen Eisprung. Kinderwunsch geht deshalb erst ohne Pille.</div><div class="wrow"><button type="button" class="btn" id="gaYes">Ja, abgesetzt</button><button type="button" class="btn ghost" id="gaNo">Nein, ich nehme sie noch</button></div></div>
+  </section>
+
+  <section class="card pillcard" id="pillCard" aria-label="Pille" hidden>
+    <div class="pk" id="pillK">Pille</div>
+    <div class="pt" id="pillT"></div>
+    <div class="muted" id="pillS"></div>
+    <div class="pstrip" id="pillStrip" aria-hidden="true"></div>
+    <div class="alert" id="pillWarn" hidden>Gestern nicht abgehakt. Prüfe die Packungsbeilage und verhüte bis dahin zusätzlich.</div>
+    <button type="button" class="btn" id="pillBtn">Pille genommen</button>
+    <details><summary>Pille vergessen?</summary><div class="dl"><div>Was zu tun ist, hängt von deiner Pille ab und davon, wie viele Stunden es her ist. Schau in die Packungsbeilage oder frag in der Apotheke. Bis du sicher bist, zusätzlich mit Kondom verhüten.</div></div></details>
+  </section>
+
+  <section class="card pset" aria-label="Pille und Erinnerung">
+    <h2>Pille und Erinnerung</h2>
+    <p class="muted" style="margin:0" id="psetT"></p>
+    <div id="pillSet"></div>
+    <button type="button" class="btn ghost" id="redoOnb">Ganze Einrichtung neu starten</button>
+  </section>
+
+  <section class="card pset" id="duoSet" aria-label="Partner">
+    <h2>Partner · Cyra Duo</h2>
+    <div class="pset" id="duoBody"></div>
+  </section>
+
+  <section class="card pset" id="duoLeave" aria-label="Partner-Ansicht" hidden>
+    <h2>Partner-Ansicht</h2>
+    <p class="muted" style="margin:0" id="duoLeaveT">Du siehst diesen Zyklus nur zum Lesen.</p>
+    <button type="button" class="btn ghost" id="duoExit">Partner-Ansicht verlassen</button>
+  </section>
+
+  <div class="sets" id="dataCard"></div>
+  <input type="file" id="impFile" accept="application/json,.json" hidden>
+
+  <p class="note">Cyra schätzt Eisprung und fruchtbare Tage aus deinen Einträgen. Nicht zur Verhütung geeignet.<br><span id="saveNote">Deine Daten bleiben auf diesem Gerät.</span></p>
+</div>
+
+<script>
+(function(){
+const STANDALONE=!!document.querySelector('meta[name="cyra-standalone"]');
+if(STANDALONE&&"serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+const DAY=864e5;
+const now=new Date();const TODAY=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate());
+const key=ms=>new Date(ms).toISOString().slice(0,10);
+const parse=k=>{const[a,b,c]=k.split('-').map(Number);return Date.UTC(a,b-1,c)};
+const diff=(a,b)=>Math.round((b-a)/DAY);
+const add=(ms,n)=>ms+n*DAY;
+const MON=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+const WD=["So","Mo","Di","Mi","Do","Fr","Sa"];
+const fmt=ms=>{const d=new Date(ms);return WD[d.getUTCDay()]+", "+d.getUTCDate()+". "+MON[d.getUTCMonth()]};
+const $=id=>document.getElementById(id);
+
+const PH={
+ per:{name:"Periode",col:"--c-per",
+  lead:"Dein Körper braucht jetzt Ruhe. Wenig Energie ist normal, gönn dir Pausen.",
+  eat:[["Eisen","Linsen, Spinat, Haferflocken, Kürbiskerne, kombiniert mit Vitamin C wie Paprika oder Orange."],["Wärmendes","Suppen, warme Mahlzeiten und Ingwertee können bei Krämpfen helfen."]],
+  care:[["Krämpfe","Wärmflasche, leichte Bewegung, Schmerzmittel früh nehmen statt zu warten."],["Müdigkeit","Genug schlafen, kurze Pausen, kein Druck."],["Zur Ärztin, wenn","die Schmerzen dich trotz Schmerzmittel vom Alltag abhalten oder die Blutung sehr stark ist."]],
+  train:[["Intensität","Tief bis mittel, je nach Gefühl."],["Gut für","Technik, Beweglichkeit, lockeres Ausdauertraining."],["Achte auf","Regeneration und Eisen. Fühlst du dich gut, darfst du voll trainieren."]],
+  body:[["Was passiert","Die Gebärmutterschleimhaut wird abgestossen. Östrogen und Progesteron sind tief."]]},
+ fol:{name:"Follikelphase",col:"--c-fol",
+  lead:"Deine Energie kommt zurück. Guter Moment, etwas Neues anzufangen.",
+  eat:[["Frisch und leicht","Gemüse, Salate, Vollkorn, Joghurt oder andere fermentierte Lebensmittel."]],
+  care:[["Unreine Haut","Sanft reinigen, weniger Zucker, nicht drücken."],["Achte auf","Dich nicht zu überladen, nur weil du dich stark fühlst."]],
+  train:[["Intensität","Hoch."],["Gut für","Krafttraining, Intervalle, neue Übungen lernen."],["Achte auf","Du erholst dich jetzt meist schneller, guter Zeitpunkt für harte Einheiten."]],
+  body:[["Was passiert","Östrogen steigt, im Eierstock reift ein Eibläschen heran. Die Länge dieser Phase bestimmt, ob dein Zyklus kurz oder lang ist."]]},
+ ov:{name:"Eisprung",col:"--c-ov",
+  lead:"Du bist auf deinem Höhepunkt: viel Kraft, gute Laune, selbstbewusst.",
+  eat:[["Leistung","Viel Gemüse, Ballaststoffe und genug Eiweiss."]],
+  care:[["Ziehen im Unterleib","Ein leichter Mittelschmerz ist normal. Wärme hilft."],["Fruchtbar","Das sind deine fruchtbarsten Tage."]],
+  train:[["Intensität","Hoch, Spitzenleistung möglich."],["Gut für","Wettkämpfe, Sprints, Maximalkraft."],["Achte auf","Gutes Aufwärmen. Bänder können lockerer sein, besonders bei Richtungswechseln wie im Fussball."]],
+  body:[["Was passiert","Das LH-Hormon steigt stark an, das Ei wird freigesetzt und lebt etwa 12–24 Stunden. Spermien überleben bis zu 5 Tage, deshalb zählen auch die Tage davor."]]},
+ lut:{name:"Lutealphase",col:"--c-lut",
+  lead:"Ruhig und konzentriert. Gegen Ende sinkt die Energie, plane mehr Pausen ein.",
+  eat:[["Gegen Heisshunger","Komplexe Kohlenhydrate wie Süsskartoffeln und Vollkorn."],["Magnesium","Nüsse, Bananen, dunkle Schokolade."],["Weniger","Salz und Zucker, das hilft gegen Wassereinlagerungen."]],
+  care:[["PMS und Gereiztheit","Bewegung draussen, weniger Koffein, Pläne lockerer halten."],["Blähbauch","Weniger Salz und Kohlensäure, Fencheltee."],["Brustspannen","Gut sitzender BH, weniger Koffein."]],
+  train:[["Intensität","Am Anfang noch hoch, gegen Ende eher mittel."],["Gut für","Ausdauer, gleichmässiges Training, Krafterhalt."],["Achte auf","Mehr trinken, die Körpertemperatur ist höher. Mehr Schlaf einplanen."]],
+  body:[["Was passiert","Nach dem Eisprung bildet sich der Gelbkörper und produziert Progesteron. Diese Phase dauert meist recht konstant 12–14 Tage."]]}
+};
+const FERT=[{t:"Sehr gering",n:1},{t:"Gering",n:2},{t:"Hoch",n:3},{t:"Sehr hoch",n:4}];
+
+function sampleData(){const s=[98,69,41,12].map(n=>add(TODAY,-n));return s.map(ms=>({s:key(ms),e:key(add(ms,4))}))}
+let state={periods:[],goal:"",mode:"normal",sample:true,trainings:[],pill:null,onboarded:false,duo:null,role:""};
+try{const raw=localStorage.getItem("cyra-v1");if(raw)state=Object.assign(state,JSON.parse(raw))}catch(e){}
+if(!state.periods.length){state.periods=sampleData();state.sample=true}
+
+let db=null,uid=null,writing=false,pending=false;
+function persisted(){return state.role==="partner"?{role:"partner",code:state.code,onboarded:true,readNotes:state.readNotes||[]}:state}
+function save(){
+  try{localStorage.setItem("cyra-v1",JSON.stringify(persisted()))}catch(e){}
+  if(!db||!uid)return;
+  pushShare();
+  if(writing){pending=true;return}
+  writing=true;
+  db.doc("data/users/"+uid+"/cyra").set(JSON.parse(JSON.stringify(persisted()))).catch(()=>{}).finally(()=>{writing=false;if(pending){pending=false;save()}});
+}
+let shareW=false,shareP=false;
+function sharePayload(){const p=state.pill;const cut=key(add(TODAY,-30));let pill=null;
+  if(state.duo.pill&&p){const tk={};for(const k in (p.taken||{}))if(k>=cut)tk[k]=p.taken[k];pill={type:p.type,start:p.start,taken:tk}}
+  return{name:state.duo.name||"",goal:state.goal||"",periods:state.sample?[]:state.periods,pill,updated:new Date().toISOString()}}
+function pushShare(){if(!db||!uid||state.role==="partner"||!state.duo||!state.duo.sec)return;if(shareW){shareP=true;return}shareW=true;
+  db.doc("duo/"+uid+"/share/"+state.duo.sec).set(JSON.parse(JSON.stringify(sharePayload()))).catch(()=>{}).finally(()=>{shareW=false;if(shareP){shareP=false;pushShare()}})}
+let duoUnsub=null,duoData=null,duoErr="";
+function splitCode(c){c=(c||"").trim();const i=c.lastIndexOf(".");if(i<1)return[null,null];const h=c.slice(0,i),s=c.slice(i+1);const ok=/^[A-Za-z0-9_\-~:@+]{3,200}$/;return ok.test(h)&&ok.test(s)?[h,s]:[null,null]}
+function applyDuo(){const d=duoData;Object.assign(state,{periods:(d.periods||[]).map(p=>Object.assign({},p)),goal:d.goal||"",pill:d.pill?Object.assign({remind:"none",time:"20:00"},d.pill):null,mode:"normal",sample:false,trainings:[]});
+  if(!state.periods.length){state.periods=sampleData();state.sample=true}render()}
+function startPartner(){if(duoUnsub||!db||state.role!=="partner")return;const[h,s]=splitCode(state.code);if(!h){duoErr="ended";render();return}
+  const tm=setTimeout(()=>{if(!duoData&&!duoErr){duoErr="slow";render()}},10000);
+  try{duoUnsub=db.doc("duo/"+h+"/share/"+s).onSnapshot(sn=>{clearTimeout(tm);if(sn.exists){duoData=JSON.parse(JSON.stringify(sn.data()));duoErr="";applyDuo()}else if(!sn.metadata.fromCache){duoData=null;duoErr="ended";render()}},()=>{clearTimeout(tm);duoErr="error";render()})}catch(e){clearTimeout(tm);duoErr="error";render()}}
+function nm(){return state.role==="partner"?((duoData&&duoData.name)||"Deine Partnerin"):""}
+function gen(n){return /[sxzß]$/i.test(n)?n+"’":n+"s"}
+(async()=>{try{
+  if(!window.claude||!claude.use)return;
+  const [d,u]=await Promise.all([claude.use("db"),claude.use("user")]);
+  if(!d||!u)return;const id=await u.id();if(!id)return;db=d;uid=id;
+  const snap=await db.doc("data/users/"+uid+"/cyra").get();
+  if(snap.exists){state=Object.assign({periods:[],goal:"",mode:"normal",sample:false,trainings:[],pill:null,onboarded:false,duo:null,role:""},JSON.parse(JSON.stringify(snap.data())));if(state.role==="partner"&&!state.periods.length){state.periods=sampleData();state.sample=true}}
+  else if(!state.sample||state.role==="partner"){save()}
+  $("saveNote").textContent="Deine Daten sind privat gespeichert und nur für dich sichtbar.";
+  if(state.role==="partner")startPartner();else pushShare();
+  render();
+}catch(e){}})();
+
+function model(){
+  const P=state.periods.slice().sort((a,b)=>a.s<b.s?-1:1);
+  const starts=P.map(p=>parse(p.s));
+  const cycles=[];for(let i=1;i<starts.length;i++)cycles.push(diff(starts[i-1],starts[i]));
+  const recent=cycles.slice(-6).filter(c=>c>=15&&c<=60);
+  const blend=(arr,def)=>{const a=arr.slice(-6);const n=a.length;const s=a.reduce((x,y)=>x+y,0);return n>=3?Math.round(s/n):def};
+  const L=blend(recent,28);
+  const spread=recent.length>=2?Math.max(...recent)-Math.min(...recent):0;
+  const done=P.filter((p,i)=>p.e&&!(i===P.length-1&&diff(parse(p.s),TODAY)<10));
+  const lens=done.map(p=>diff(parse(p.s),parse(p.e))+1).filter(n=>n>=2&&n<15);
+  const PL=Math.min(10,Math.max(2,blend(lens,5)));
+  const last=starts.length?starts[starts.length-1]:null;
+  let next=last!==null?add(last,L):null; const late=next!==null&&next<TODAY?diff(next,TODAY):0;
+  if(late)next=add(TODAY,1);
+  return {P,starts,cycles,L,spread,PL,last,next,late};
+}
+function periodLenFor(m,i){const p=m.P[i];if(p.e)return diff(parse(p.s),parse(p.e))+1;return m.PL}
+function info(ms,m){
+  const S=m.starts;if(!S.length||ms<S[0])return null;
+  let i=0;while(i+1<S.length&&S[i+1]<=ms)i++;
+  let start,len,pl,recorded=false,predStart=false;
+  if(i<S.length-1){start=S[i];len=diff(S[i],S[i+1]);pl=periodLenFor(m,i);recorded=true}
+  else if(ms<m.next){start=S[i];len=Math.max(m.L,diff(S[i],m.next));pl=periodLenFor(m,i);recorded=true}
+  else{const k=Math.floor(diff(m.next,ms)/m.L);start=add(m.next,k*m.L);len=m.L;pl=m.PL;predStart=true}
+  const d=diff(start,ms)+1;let o=Math.max(6,len-14);
+  if(state.lh&&!predStart){for(const k in state.lh){if(state.lh[k]!=="pos")continue;const L=parse(k);if(L>=start&&L<add(start,len)){const od=diff(start,L)+2;if(od>=6&&od<len-4){o=od;break}}}}
+  let ph;if(d<=pl)ph="per";else if(d<o-1)ph="fol";else if(d<=o+1)ph="ov";else ph="lut";
+  let f=0;if(d>=o-5&&d<=o-3)f=2;else if(d>=o-2&&d<=o)f=3;else if(d===o+1)f=1;
+  if(d<=pl)f=0;
+  const isPer=d<=pl;
+  return {d,len,o,pl,ph,f,isPer,perRecorded:isPer&&recorded&&!(ms>TODAY&&!m.P[i].e&&i===S.length-1&&false),pred:ms>TODAY||(predStart),start,idx:predStart?-1:i};
+}
+function recordedPeriodAt(ms,m){for(let i=0;i<m.P.length;i++){const s=parse(m.P[i].s);const e=m.P[i].e?parse(m.P[i].e):add(s,m.PL-1);if(ms>=s&&ms<=e)return i}return -1}
+
+function css(v){return getComputedStyle(document.body).getPropertyValue(v).trim()}
+function arc(cx,cy,r,a0,a1){const p=a=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];const[x0,y0]=p(a0),[x1,y1]=p(a1);return `M${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${a1-a0>Math.PI?1:0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`}
+
+let viewMonth=new Date(TODAY);viewMonth=Date.UTC(viewMonth.getUTCFullYear(),viewMonth.getUTCMonth(),1);
+let selected=null;
+
+function renderRing(t){
+  const svg=$("ring");const R=92,C=110,W=20;let s=`<circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="var(--line)" stroke-width="${W}"/>`;
+  if(t){const len=t.len,seg=[["per",1,t.pl],["fol",t.pl+1,t.o-2],["ov",t.o-1,t.o+1],["lut",t.o+2,len]];
+    const ang=d=>-Math.PI/2+(d/len)*2*Math.PI;const gap=0.02;
+    seg.forEach(([k,a,b])=>{if(b<a)return;s+=`<path d="${arc(C,C,R,ang(a-1)+gap,ang(b)-gap)}" fill="none" stroke="var(${PH[k].col})" stroke-width="${W}" stroke-linecap="round"/>`});
+    const dd=Math.min(t.d,len);const a=ang(dd-0.5);const x=C+R*Math.cos(a),y=C+R*Math.sin(a);
+    s+=`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="13" fill="var(--surface)" stroke="var(--ink)" stroke-width="3"/>`;
+    const oa=ang(t.o-0.5);s+=`<circle cx="${(C+(R-24)*Math.cos(oa)).toFixed(2)}" cy="${(C+(R-24)*Math.sin(oa)).toFixed(2)}" r="4" fill="var(--c-ov)"/>`}
+  svg.innerHTML=s;
+}
+function dl(el,items){el.innerHTML="";items.forEach(([b,t])=>{const d=document.createElement("div");const h=document.createElement("b");h.textContent=b;d.appendChild(h);d.appendChild(document.createTextNode(t));el.appendChild(d)})}
+function fertBlock(el,f,label,note){
+  el.innerHTML="";const F=FERT[f];
+  const l=document.createElement("div");l.className="fl";l.textContent=label;el.appendChild(l);
+  const v=document.createElement("div");v.className="fv";v.textContent=F.t;el.appendChild(v);
+  const s=document.createElement("div");s.className="fseg";s.setAttribute("aria-hidden","true");
+  for(let i=0;i<4;i++){const b=document.createElement("i");if(i<F.n)b.className="on";s.appendChild(b)}el.appendChild(s);
+  const lb=document.createElement("div");lb.className="flab";lb.setAttribute("aria-hidden","true");
+  FERT.forEach((x,i)=>{const sp=document.createElement("span");sp.textContent=x.t.toLowerCase();if(i===f)sp.className="cur";lb.appendChild(sp)});el.appendChild(lb);
+  if(note){const n=document.createElement("div");n.className="fn";n.textContent=note;el.appendChild(n)}
+}
+const ICO={go:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>',mid:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>',slow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg>'};
+function trainFor(t){
+  if(t.ph==="per")return{l:"slow",t:"Ruhig angehen",i:3,mach:"Technik, Mobility, lockerer Lauf",lass:"Sprints und Maximalkraft",achte:"Viel trinken, eisenreich essen",k:"Trinken!",s:"Weniger intensiv, auf deinen Körper hören. Viel trinken und auf Eisen achten."};
+  if(t.ph==="fol")return{l:"go",t:"Gib Gas",i:8,mach:"Kraft, Intervalle, neue Übungen",lass:"Zu lockere Einheiten – nutz die Energie",achte:"",k:"",s:"Guter Tag für hartes Training und neue Bestleistungen."};
+  if(t.ph==="ov")return{l:"go",t:"Gib alles",i:9,mach:"Sprints, Maximalkraft, Spiel",lass:"Ohne Aufwärmen starten",achte:"Bänder evtl. lockerer – gut aufwärmen",k:"Aufwärmen!",s:"Top-Tag, volle Leistung möglich. Bänder evtl. lockerer, Verletzungsgefahr etwas höher."};
+  if(t.d<=t.len-5)return{l:"mid",t:"Solid trainieren",i:6,mach:"Ausdauer, Krafterhalt, Technik",lass:"Neue Maximalversuche",achte:"Mehr trinken, Körpertemperatur ist höher",k:"Trinken!",s:"Ausdauer und Kraft halten. Deine Körpertemperatur ist höher."};
+  return{l:"mid",t:"Etwas runterfahren",i:4,mach:"Lockeres Training, Dehnen, Yoga",lass:"Harte Intervalle",achte:"Mehr Pausen, PMS kann Kraft kosten",k:"Pausen!",s:"Weniger Intensität, mehr Erholung. PMS kann Kraft kosten."};
+}
+function renderTrain(t,m){
+  const c=$("trainCard");c.hidden=state.mode!=="sport";if(c.hidden)return;
+  const r=Object.assign({},trainFor(t));const sp=SPORT[st().sport];if(sp){const pk=t.ph==="lut"?(t.d<=t.len-5?"lutE":"lutL"):t.ph;if(sp[pk]){r.mach=sp[pk][0];r.lass=sp[pk][1]}}
+  $("tIco").innerHTML=ICO[r.l];$("tPill").style.background=`var(--${r.l})`;$("tPill").style.color=r.l==="mid"?"#3A2A00":"#fff";
+  $("tTitle").textContent=r.t;
+  $("tInt").innerHTML="Intensität <b>"+r.i+"/10</b>";
+  const co=$("tCoach");co.innerHTML="";
+  [["Mach",r.mach,""],["Lass",r.lass,""],["Achte",r.achte,"warn"]].forEach(([a,b,c])=>{if(!b)return;const k=document.createElement("span");k.className="ck "+c;k.textContent=a;const v=document.createElement("span");v.textContent=b;co.appendChild(k);co.appendChild(v)});
+}
+function score(x){if(!x)return 50;const{d,pl,o,len}=x;let s;
+  if(x.ph==="per")s=35+(d-1)*4;
+  else if(x.ph==="fol")s=62+25*(d-pl)/Math.max(1,(o-1-pl));
+  else if(x.ph==="ov")s=d===o?97:92;
+  else if(d<=len-5)s=80-3*(d-(o+2));
+  else s=55-4*(d-(len-4));
+  return Math.max(22,Math.min(100,s))}
+function renderCurveOld(t,m){
+  const r=trainFor(t);
+  const pts=[];for(let i=-3;i<=3;i++){const ms=add(TODAY,i);pts.push({ms,s:score(info(ms,m)),i})}
+  const best=Math.max(...pts.map(p=>p.s));const today=pts[3];
+  $("tHead").textContent=today.s>=best?"Heute ist dein stärkster Tag – "+r.t:r.t+(pts.slice(4).some(p=>p.s>today.s+5)?" – stärkere Tage kommen":"");
+  const X=i=>22+(i+3)*46,Y=s=>88-s*0.72;const P=pts.map(p=>[X(p.i),Y(p.s)]);
+  let d=`M${P[0][0]} ${P[0][1].toFixed(1)}`;
+  for(let i=0;i<P.length-1;i++){const p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||p2;
+    d+=` C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)} ${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)} ${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0]} ${p2[1].toFixed(1)}`}
+  let svg=`<line x1="10" y1="88" x2="310" y2="88" stroke="var(--line)" stroke-width="1"/><line x1="10" y1="52" x2="310" y2="52" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"/>`;
+  svg+=`<path d="${d} L${P[6][0]} 88 L${P[0][0]} 88 Z" fill="color-mix(in srgb, var(--c-ov) 18%, transparent)"/>`;
+  svg+=`<path d="${d}" fill="none" stroke="var(--c-ov)" stroke-width="3" stroke-linecap="round"/>`;
+  svg+=`<line x1="${X(0)}" y1="${Y(today.s)+9}" x2="${X(0)}" y2="88" stroke="var(--ink)" stroke-width="1" stroke-dasharray="2 3"/>`;
+  svg+=`<circle cx="${X(0)}" cy="${Y(today.s).toFixed(1)}" r="8" fill="var(--${r.l})" stroke="var(--surface)" stroke-width="3"/>`;
+  pts.forEach(p=>{const wd=p.i===0?"Heute":WD[new Date(p.ms).getUTCDay()];svg+=`<text x="${X(p.i)}" y="106" text-anchor="middle" font-size="12" font-family="Nunito,sans-serif" font-weight="${p.i===0?800:600}" fill="${p.i===0?"var(--ink)":"var(--muted)"}">${wd}</text>`});
+  $("tCurve").innerHTML=svg;
+  $("tSub").textContent=r.s;
+  $("tWarn").hidden=!r.k;$("tWarnT").textContent=r.k;
+}
+/* ---------- Benachrichtigungen ---------- */
+function ovText(){if(state.role==="partner"){const n=nm();return state.goal==="wish"?["🎉 Heute ist "+gen(n)+" fruchtbarster Tag! 💕","Die Chancen sind jetzt am allerhöchsten. 🍀"]:state.goal==="avoid"?["🚨 Heute ist "+gen(n)+" Eisprung","Höchstes Risiko für eine Schwangerschaft. 🛑"]:[n+" hat heute ihren Eisprung","Sie hat meist viel Energie und gute Laune. Höchstes Risiko für eine Schwangerschaft."]}
+  return state.goal==="wish"?["🎉💕 Heute ist DEIN Tag!","Dein Eisprung ist da und deine Chancen sind jetzt am allerhöchsten. 🍀✨"]:state.goal==="avoid"?["🚨⚠️ Achtung, heute ist dein Eisprung!","Du kannst jetzt sehr leicht schwanger werden. Pass gut auf! 🛑"]:["Heute ist dein Eisprung","Du hast wahrscheinlich viel Energie. Heute ist eine Schwangerschaft am wahrscheinlichsten."]}
+function notesList(m){const out=[];if(state.sample)return out;
+  for(let i=-7;i<=0;i++){const ms=add(TODAY,i);const x=info(ms,m);if(!x)continue;const ago=-i;
+    if(ns().ov&&x.d===x.o){const[t,s]=ovText();out.push({id:"ov"+key(ms),ms,t,s,c:"--c-ov",tag:"Eisprung"})}
+    const ND=ns().perDays;const x2=info(add(ms,ND),m);if(ns().per&&x2&&x2.d===1&&x.d!==1)out.push({id:"p"+ND+key(ms),ms,t:state.role==="partner"?nm()+" bekommt in "+days(ND).replace("Tagen","Tagen")+" ihre Periode":"Deine Periode kommt in "+days(ND),s:state.role==="partner"?"Sie ist vielleicht müder oder gereizter, das ist nicht gegen dich. Sei geduldig.":"Pack Tampons oder Binden ein.",c:"--c-per",tag:"Periode"});
+    if(ns().per&&x.d===1&&x.pred!==false&&recordedPeriodAt(ms,m)<0)out.push({id:"p0"+key(ms),ms,t:state.role==="partner"?"Bei "+nm()+" sollte heute die Periode beginnen":"Deine Periode sollte heute beginnen",s:state.role==="partner"?"Wärme, Ruhe und Hilfe im Alltag tun ihr gut.":"Trag sie ein, sobald sie da ist.",c:"--c-per",tag:"Periode"})}
+  return out.sort((a,b)=>b.ms-a.ms)}
+function agoTxt(ms){const d=diff(ms,TODAY);return d===0?"heute":d===1?"gestern":"vor "+d+" Tagen"}
+let inboxOpen=false;
+function renderNotes(m){const L=notesList(m);const read=state.readNotes||[];const unread=L.filter(n=>!read.includes(n.id)).length;
+  $("bellN").hidden=!unread;$("bellN").textContent=unread;$("bell").setAttribute("aria-label",unread?unread+" neue Benachrichtigungen":"Benachrichtigungen");
+  $("inbox").hidden=!inboxOpen;$("bell").setAttribute("aria-expanded",inboxOpen);if(!inboxOpen)return;
+  const box=$("inboxList");box.innerHTML="";
+  if(!L.length){const p=document.createElement("p");p.className="muted";p.style.margin="0";p.textContent=state.sample?"Trag deine Periode ein, dann erinnert dich Cyra an Eisprung und Periode.":"Gerade keine Benachrichtigungen. Cyra meldet sich 2 Tage vor deiner Periode und an deinem Eisprung.";box.appendChild(p);return}
+  L.forEach(n=>{const r=document.createElement("div");r.className="note-i"+(read.includes(n.id)?"":" new");
+    const d=document.createElement("span");d.className="nd";d.style.background=`var(${n.c})`;r.appendChild(d);
+    const b=document.createElement("div");const t=document.createElement("div");t.className="nt";t.textContent=n.t;const s=document.createElement("div");s.className="ns";s.textContent=n.s;const mm=document.createElement("div");mm.className="nm";mm.textContent=n.tag+" · "+agoTxt(n.ms);
+    b.appendChild(t);b.appendChild(s);b.appendChild(mm);r.appendChild(b);box.appendChild(r)})}
+$("bell").onclick=()=>{inboxOpen=!inboxOpen;if(!inboxOpen){const m=model();const ids=notesList(m).map(n=>n.id);state.readNotes=[...new Set([...(state.readNotes||[]),...ids])].slice(-40);commit()}else render()};
+/* ---------- Einstellungen ---------- */
+const DEF_SET={name:"",theme:"auto",sport:"",notif:{per:true,perDays:2,ov:true},lock:{on:false,hash:""}};
+function st(){const s=state.settings||{};return{showFert:s.showFert!==false,name:s.name||"",theme:s.theme||"auto",sport:s.sport||"",notif:Object.assign({},DEF_SET.notif,s.notif||{}),lock:Object.assign({},DEF_SET.lock,s.lock||{})}}
+function ns(){return state.role==="partner"?DEF_SET.notif:st().notif}
+function setS(patch){state.settings=Object.assign(st(),patch);commit()}
+const SPORTS=[["fussball","Fussball"],["laufen","Laufen"],["kraft","Kraft / Fitness"],["tanzen","Tanzen"],["schwimmen","Schwimmen"],["velo","Velo"],["andere","Andere"]];
+const SPORT={fussball:{per:["Technik am Ball, Passspiel, lockeres Auslaufen","Sprints und harte Zweikämpfe"],fol:["Schnelligkeit, Sprints, Kraft für die Beine","Nur locker – nutz die Energie"],ov:["Spiel, Torschüsse, Sprints mit voller Power","Richtungswechsel ohne Aufwärmen"],lutE:["Ausdauer, Passformen, Taktik","Neue Maximalversuche"],lutL:["Technik, Standards, lockeres Spiel","Harte Intervalle"]},
+ laufen:{per:["Lockerer Dauerlauf, Mobility","Intervalle und Tempoläufe"],fol:["Intervalle, Tempoläufe, Hügel","Nur langsam laufen"],ov:["Tempo, Bestzeit-Versuch, Wettkampf","Kalt loslaufen"],lutE:["Langer Lauf in ruhigem Tempo","Bestzeiten erzwingen"],lutL:["Kurze lockere Läufe, Dehnen","Harte Intervalle"]},
+ kraft:{per:["Leichte Gewichte, Mobility, Technik","Maximalgewichte"],fol:["Schwere Sätze, neue Übungen","Zu leichte Einheiten"],ov:["Maximalkraft, persönliche Rekorde","Ohne Aufwärmen starten"],lutE:["Krafterhalt mit mittleren Gewichten","Neue Rekorde erzwingen"],lutL:["Leichte Gewichte, mehr Pausen","Harte Supersätze"]}};
+const HOST_THEME=document.documentElement.getAttribute("data-theme");
+function applyTheme(){const t=state.role==="partner"?"auto":st().theme;const r=document.documentElement;if(t==="auto"){if(HOST_THEME)r.setAttribute("data-theme",HOST_THEME);else r.removeAttribute("data-theme")}else r.setAttribute("data-theme",t)}
+let sOpen="",lockStep=null,dataConfirm=false,exportMsg="",obRedo=false,goalAsk=false,goalInfo=false,pOpen="",pDraft=null;
+function backBtn(fn){const b=el("button","btn ghost","Zurück");b.type="button";b.style.width="auto";b.onclick=fn||(()=>{sOpen="";render()});return b}
+const PT=[["21-7","21 + 7 Pause"],["24-4","24 + 4 Pause"],["28","Durchgehend"],["mini","Minipille"]];
+const RMS=[["alarm","⏰ Wecker"],["notify","🔔 Nachricht"],["none","Keine"]];
+function renderPillSet(){const b=$("pillSet");if(!b)return;b.innerHTML="";const on=pillOn();const p=state.pill||{};const g=el("div","glist");g.style.margin="0";
+  const tl=el("div","sline");tl.style.cursor="default";tl.appendChild(el("span","","Ich nehme die Pille"));
+  tl.appendChild(sw(on||pOpen==="new","Pille",()=>{if(on){state.pill=null;pOpen="";commit()}else if(pOpen==="new"){pOpen="";render()}else{pOpen="new";pDraft={type:"21-7",start:key(TODAY),remind:"alarm",time:"20:00"};render()}}));g.appendChild(srow(tl));
+  const close=()=>{pOpen="";render()};const save=patch=>{state.pill=Object.assign({},state.pill||{taken:{}},patch);pOpen="";if(state.goal==="wish")state.goal="";commit()};
+  const dateIn=(v,lab)=>{const i=el("input","duoin");i.type="date";i.max=key(TODAY);i.value=v;i.setAttribute("aria-label",lab);return i};const timeIn=v=>{const i=el("input","duoin");i.type="time";i.value=v;i.setAttribute("aria-label","Uhrzeit");return i};
+  const btns=(onSave)=>{const r=el("div","wrow");r.appendChild(backBtn(close));const s=el("button","btn","Speichern");s.type="button";s.onclick=onSave;r.appendChild(s);return r};
+  if(pOpen==="new"){const d=pDraft;const box=el("div","pset");box.appendChild(el("div","muted","Art der Pille"));box.appendChild(chipRow(PT,d.type,v=>{d.type=v;render()}));
+    box.appendChild(el("div","muted","Erste Pille dieser Packung"));const di=dateIn(d.start,"Packung begonnen");di.oninput=()=>{d.start=di.value};box.appendChild(di);
+    box.appendChild(el("div","muted","Erinnerung"));box.appendChild(chipRow(RMS,d.remind,v=>{d.remind=v;render()}));
+    if(d.remind!=="none"){const ti=timeIn(d.time);ti.oninput=()=>{d.time=ti.value||"20:00"};box.appendChild(ti)}
+    const er=el("div","jerr");er.hidden=true;box.appendChild(er);
+    box.appendChild(btns(()=>{if(!d.start||parse(d.start)>TODAY){er.textContent="Wähl ein Datum von heute oder früher.";er.hidden=false;return}save({type:d.type,start:d.start,remind:d.remind,time:d.time,taken:{}})}));g.appendChild(srow(box))}
+  else if(on){const tL=(PT.find(x=>x[0]===p.type)||["",""])[1];
+    if(pOpen==="type")g.appendChild(srow(line("Art","",close),chipRow(PT,p.type,v=>save({type:v})),backBtn(close)));else g.appendChild(srow(line("Art",tL+" ›",()=>{pOpen="type";render()})));
+    if(pOpen==="start"){const di=dateIn(p.start,"Packung begonnen");const er=el("div","jerr");er.hidden=true;g.appendChild(srow(line("Packung begonnen","",close),di,er,btns(()=>{if(!di.value||parse(di.value)>TODAY){er.textContent="Wähl ein Datum von heute oder früher.";er.hidden=false;return}save({start:di.value})})))}
+    else g.appendChild(srow(line("Packung begonnen",fmt(parse(p.start))+" ›",()=>{pOpen="start";render()})));
+    const rL=(RMS.find(x=>x[0]===(p.remind||"none"))||["","Keine"])[1]+(p.remind&&p.remind!=="none"?" · "+p.time:"");
+    if(pOpen==="remind"){const dd={remind:p.remind||"none",time:p.time||"20:00"};const box=el("div","pset");const rc=chipRow(RMS,dd.remind,v=>{dd.remind=v;[...rc.children].forEach(c=>c.setAttribute("aria-pressed",c.textContent===RMS.find(x=>x[0]===v)[1]));ti.hidden=v==="none"});const ti=timeIn(dd.time);ti.hidden=dd.remind==="none";ti.oninput=()=>{dd.time=ti.value||"20:00"};
+      box.appendChild(rc);box.appendChild(ti);box.appendChild(btns(()=>save({remind:dd.remind,time:dd.time})));g.appendChild(srow(line("Erinnerung","",close),box))}
+    else g.appendChild(srow(line("Erinnerung",rL+" ›",()=>{pOpen="remind";render()})))}
+  b.appendChild(g)}
+function sw(on,label,fn){const b=el("button","sw");b.type="button";b.setAttribute("role","switch");b.setAttribute("aria-checked",!!on);b.setAttribute("aria-label",label);b.onclick=fn;return b}
+function line(label,val,fn,cls){const b=el("button","sline"+(cls?" "+cls:""));b.type="button";b.appendChild(el("span","",label));if(val!=null)b.appendChild(el("span","sv",val));b.onclick=fn;return b}
+function chipRow(opts,cur,fn){const r=el("div","chips");opts.forEach(([v,l])=>{const c=el("button","chip",l);c.type="button";c.setAttribute("aria-pressed",cur===v);c.onclick=()=>fn(v);r.appendChild(c)});return r}
+function group(title,rows){const f=document.createDocumentFragment();f.appendChild(el("div","sk",title));const g=el("div","glist");rows.forEach(r=>g.appendChild(r));f.appendChild(g);return f}
+function srow(...kids){const r=el("div","srow");kids.forEach(k=>k&&r.appendChild(k));return r}
+function renderSettings(m){if(state.role==="partner")return;const S=st();
+  const nmv=S.name;$("profAv").textContent=(nmv||"?").trim().charAt(0).toUpperCase()||"?";$("profHi").textContent=nmv?"Hallo "+nmv+" 👋":"Hallo 👋";
+  const t=info(TODAY,m);$("profSub").textContent=state.sample?"Trag deine Periode ein, um zu starten.":t?"Tag "+t.d+" · "+PH[t.ph].name:"";
+  const c=$("setCard");c.innerHTML="";
+  // Allgemein
+  let nameRow;if(sOpen==="name"){const ed=el("div","sedit");const i=el("input","duoin");i.id="setName";i.type="text";i.maxLength=30;i.value=nmv;i.placeholder="Chana";i.setAttribute("aria-label","Dein Name");const ok=el("button","btn","Speichern");ok.type="button";ok.onclick=()=>{sOpen="";setS({name:i.value.trim()})};ed.appendChild(i);ed.appendChild(ok);ed.appendChild(backBtn());nameRow=srow(line("Name","",()=>{sOpen="";render()}),ed);setTimeout(()=>i.focus(),0)}
+  else nameRow=srow(line("Name",(nmv||"Hinzufügen")+" ›",()=>{sOpen="name";render()}));
+  const TH=[["light","☀️ Hell"],["dark","🌙 Dunkel"],["auto","Automatisch"]];
+  const desRow=sOpen==="design"?srow(line("Design","",()=>{sOpen="";render()}),chipRow(TH,S.theme,v=>{sOpen="";setS({theme:v})}),backBtn()):srow(line("Design",TH.find(x=>x[0]===S.theme)[1].replace(/^\S+ /,"")+" ›",()=>{sOpen="design";render()}));
+  // Sperre
+  const lk=el("div","sline");lk.style.cursor="default";lk.appendChild(el("span","","App-Sperre mit Code"));lk.appendChild(sw(S.lock.on,"App-Sperre",()=>{if(S.lock.on){lockStep=null;setS({lock:{on:false,hash:""}})}else{lockStep={a:"",err:""};render()}}));
+  let lkEd=null;if(lockStep&&!S.lock.on){lkEd=el("div","pset");lkEd.appendChild(el("div","muted","Wähle einen 4-stelligen Code. Er schützt Cyra, wenn jemand dein Handy in der Hand hat."));
+    const a=el("input","duoin");a.type="password";a.inputMode="numeric";a.maxLength=4;a.placeholder="Code";a.setAttribute("aria-label","Neuer Code");a.id="lockA";const b=el("input","duoin");b.type="password";b.inputMode="numeric";b.maxLength=4;b.placeholder="Code wiederholen";b.setAttribute("aria-label","Code wiederholen");b.id="lockB";
+    const er=el("div","jerr",lockStep.err);er.hidden=!lockStep.err;const row=el("div","wrow");const cn=el("button","btn ghost","Abbrechen");cn.type="button";cn.onclick=()=>{lockStep=null;render()};
+    const ok=el("button","btn","Sperre einschalten");ok.type="button";ok.onclick=async()=>{if(!/^\d{4}$/.test(a.value)){lockStep.err="Gib genau 4 Ziffern ein.";er.textContent=lockStep.err;er.hidden=false;return}if(a.value!==b.value){lockStep.err="Die beiden Codes stimmen nicht überein.";er.textContent=lockStep.err;er.hidden=false;return}
+      const h=await hashCode(a.value);lockStep=null;unlocked=true;setS({lock:{on:true,hash:h}})};row.appendChild(cn);row.appendChild(ok);[a,b,er,row].forEach(x=>lkEd.appendChild(x));setTimeout(()=>a.focus(),0)}
+  const fz=el("div","sline");fz.style.cursor="default";fz.appendChild(el("span","","Fruchtbarkeit anzeigen"));fz.appendChild(sw(S.showFert,"Fruchtbarkeit anzeigen",()=>setS({showFert:!S.showFert})));
+  const fzRow=srow(fz,S.showFert?null:el("div","muted","Fruchtbarkeit ist auf Heute und im Kalender ausgeblendet."));
+  c.appendChild(group("Allgemein",[nameRow,desRow,fzRow,srow(lk,lkEd)]));
+  // Cyra Active
+  const spV=SPORTS.find(x=>x[0]===S.sport);
+  const spRow=sOpen==="sport"?srow(line("Sportart","",()=>{sOpen="";render()}),chipRow(SPORTS,S.sport,v=>{sOpen="";setS({sport:v})}),el("div","muted","Die Coach-Tipps in Cyra Active passen sich deiner Sportart an."),backBtn()):srow(line("Sportart",(spV?spV[1]:"Wählen")+" ›",()=>{sOpen="sport";render()}));
+  const ac=el("div","sline");ac.style.cursor="default";ac.appendChild(el("span","","Cyra Active ⚡"));ac.appendChild(sw(state.mode==="sport","Cyra Active",()=>{const on=state.mode!=="sport";state.mode=on?"sport":"normal";commit();if(on)goTab("active")}));
+  const acRow=srow(ac,el("div","muted","Sportmodus mit Coach, Trainingsjournal und Statistik."));
+  c.appendChild(group("Cyra Active",state.mode==="sport"?[acRow,spRow]:[acRow]));
+  // Benachrichtigungen
+  const N=S.notif;const per=el("div","sline");per.style.cursor="default";per.appendChild(el("span","","Periode"));per.appendChild(sw(N.per,"Benachrichtigung Periode",()=>setS({notif:Object.assign({},N,{per:!N.per})})));
+  let perD=null;if(N.per){perD=el("div","pset");perD.appendChild(el("div","muted","Wie viele Tage vorher?"));perD.appendChild(chipRow([[1,"1 Tag"],[2,"2 Tage"],[3,"3 Tage"]],N.perDays,v=>setS({notif:Object.assign({},N,{perDays:v})})))}
+  const ov=el("div","sline");ov.style.cursor="default";ov.appendChild(el("span","","Eisprung"));ov.appendChild(sw(N.ov,"Benachrichtigung Eisprung",()=>setS({notif:Object.assign({},N,{ov:!N.ov})})));
+  c.appendChild(group("Benachrichtigungen",[srow(per,perD),srow(ov,el("div","muted","Erscheinen in der Glocke oben. Echte Push-Nachrichten kommen mit der App."))]));
+  // Daten
+  const d=$("dataCard");d.innerHTML="";
+  const ex=srow(line("Daten exportieren","JSON ›",exportData),exportMsg?el("div","muted",exportMsg):null);
+  let del;if(!dataConfirm)del=srow(line("Alle Daten löschen",null,()=>{dataConfirm=true;render()},"danger"));
+  else{const r=el("div","wrow");const cn=el("button","btn ghost","Abbrechen");cn.type="button";cn.onclick=()=>{dataConfirm=false;render()};const ok=el("button","btn","Ja, alles löschen");ok.type="button";ok.style.background="var(--slow)";ok.style.color="#fff";ok.onclick=wipeAll;r.appendChild(cn);r.appendChild(ok);
+    del=srow(el("div","sline danger","Wirklich alles löschen?"),el("div","muted","Perioden, Trainings, Pille, Einstellungen und das Partner-Teilen werden gelöscht. Das kann man nicht rückgängig machen."),r)}
+  const imp=srow(line("Daten importieren","JSON ›",()=>{importMsg="";$("impFile").click()}),importMsg?el("div","muted",importMsg):null);
+  d.appendChild(group("Meine Daten",[ex,imp,del]));renderPillSet()}
+let importMsg="";
+$("impFile").onchange=async()=>{const f=$("impFile").files[0];$("impFile").value="";if(!f)return;
+  try{const j=JSON.parse(await f.text());if(!j||!Array.isArray(j.periods)){importMsg="Das ist keine Cyra-Datei.";render();return}
+    const keep=["periods","goal","mode","trainings","pill","hearts","lh","dayAns","settings","heartInfo","check"];const n={sample:false,onboarded:true,role:"",duo:null};keep.forEach(k=>{if(j[k]!==undefined)n[k]=j[k]});
+    if(n.settings)n.settings=Object.assign({},n.settings,{lock:{on:false,hash:""}});state=Object.assign({periods:[],goal:"",mode:"normal",trainings:[],pill:null},n);if(!state.periods.length){state.periods=sampleData();state.sample=true}
+    importMsg="Importiert: "+(j.periods||[]).length+" Perioden, "+(j.trainings||[]).length+" Trainings.";commit()}catch(e){importMsg="Die Datei konnte nicht gelesen werden.";render()}};
+async function exportData(){exportMsg="";try{const dl=window.claude&&claude.use?await claude.use("downloads"):null;
+  const data=JSON.stringify(Object.assign({app:"Cyra",exportiert:new Date().toISOString()},persisted(),{settings:Object.assign({},st(),{lock:{on:st().lock.on}})}),null,2);
+  const fn="cyra-daten-"+key(TODAY)+".json";
+  if(!dl){if(STANDALONE){const u=URL.createObjectURL(new Blob([data],{type:"application/json"}));const a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);exportMsg="Gespeichert."}else exportMsg="Export ist hier gerade nicht verfügbar.";render();return}
+  await dl.save({filename:"cyra-daten-"+key(TODAY)+".json",data});exportMsg="Gespeichert."}catch(e){exportMsg=e&&e.code==="declined"?"":"Export hat nicht geklappt. Versuche es später nochmal."}render()}
+function wipeAll(){if(db&&uid&&state.duo&&state.duo.sec)db.doc("duo/"+uid+"/share/"+state.duo.sec).delete().catch(()=>{});
+  state={periods:sampleData(),goal:"",mode:"normal",sample:true,trainings:[],pill:null,onboarded:false,duo:null,role:""};dataConfirm=false;sOpen="";ob=null;unlocked=true;try{localStorage.removeItem("cyra-tab")}catch(e){}tab="heute";commit();window.scrollTo(0,0)}
+/* Sperre */
+let unlocked=false,pin="",hiddenAt=0;
+async function hashCode(c){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("cyra:"+c));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,"0")).join("")}catch(e){let h=0;for(const ch of "cyra:"+c)h=(h*31+ch.charCodeAt(0))|0;return "f"+(h>>>0).toString(16)}}
+function renderLock(){const on=state.role!=="partner"&&state.onboarded&&st().lock.on&&st().lock.hash&&!unlocked;$("lock").hidden=!on;document.body.style.overflow=on?"hidden":"";if(!on)return;
+  $("lockLogo").innerHTML=document.querySelector(".logo").innerHTML;[...$("lockDots").children].forEach((d,i)=>d.classList.toggle("on",i<pin.length))}
+function keyIn(k){if(k==="del"){pin=pin.slice(0,-1);$("lockErr").textContent="";renderLock();return}if(pin.length>=4)return;pin+=k;renderLock();
+  if(pin.length===4){hashCode(pin).then(h=>{if(h===st().lock.hash){unlocked=true;pin="";$("lockErr").textContent="";$("lockReset").hidden=true;renderLock()}else{pin="";$("lockErr").textContent="Falscher Code. Versuch es nochmal.";renderLock()}})}}
+(function(){const kp=$("keypad");["1","2","3","4","5","6","7","8","9","","0","del"].forEach(k=>{const b=el("button",k==="del"?"ghostk":"",k==="del"?"Löschen":k);b.type="button";if(!k){b.style.visibility="hidden";b.tabIndex=-1}b.onclick=()=>keyIn(k);if(k==="del")b.setAttribute("aria-label","Letzte Ziffer löschen");kp.appendChild(b)})})();
+document.addEventListener("keydown",e=>{if($("lock").hidden)return;if(/^\d$/.test(e.key))keyIn(e.key);else if(e.key==="Backspace")keyIn("del")});
+$("lockForgot").onclick=()=>{$("lockReset").hidden=false};$("lockWipe").onclick=()=>{$("lockReset").hidden=true;wipeAll()};
+document.addEventListener("visibilitychange",()=>{if(document.hidden)hiddenAt=Date.now();else if(hiddenAt&&Date.now()-hiddenAt>60000&&st().lock.on){unlocked=false;pin="";renderLock()}});
+/* ---------- Tabs ---------- */
+const TABMAP=[["heute",["#sample","#duoMsg","#duoTip","section.hero","#wishCard","section.phase","#pillCard"]],["kalender",['section[aria-label="Diese Woche"]','section[aria-label="Kalender"]','section[aria-label="Dein Zyklus in Zahlen"]']],["active",["#trainCard","#journal","#tStats"]],["ich",['section[aria-label="Dein Ziel"]','section[aria-label="Pille und Erinnerung"]',"#duoSet","#duoLeave","#dataCard","p.note"]]];
+["#profCard","#setCard"].forEach(s=>{const e=document.querySelector(s);if(e)e.dataset.tab="ich"});
+$("dataCard").dataset.tab="ich";
+document.querySelector("#app section.hero").after($("pillCard"));
+TABMAP.forEach(([t,sels])=>sels.forEach(s=>document.querySelectorAll("#app "+s).forEach(e=>e.dataset.tab=t)));
+let tab="heute";try{const t=localStorage.getItem("cyra-tab");if(t)tab=t}catch(e){}
+function tabsOk(){const isP=state.role==="partner";return["heute","kalender"].concat(state.mode==="sport"&&!isP?["active"]:[],["ich"])}
+function renderTabs(){const ok=tabsOk();if(!ok.includes(tab))tab="heute";document.body.dataset.tab=tab;$("tabbar").hidden=!state.onboarded;
+  document.querySelectorAll("#tabbar button").forEach(b=>{b.hidden=!ok.includes(b.dataset.t);if(b.dataset.t===tab)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")})}
+function goTab(t){tab=t;try{localStorage.setItem("cyra-tab",t)}catch(e){}renderTabs();window.scrollTo(0,0)}
+document.querySelectorAll("#tabbar button").forEach(b=>b.onclick=()=>goTab(b.dataset.t));
+/* ---------- Hat sich etwas verändert? ---------- */
+const WHY=[["train","Mehr oder weniger Training","🏃‍♀️","Viel mehr Training kann den Zyklus verlängern oder die Periode ausbleiben lassen, wenn der Körper zu wenig Energie bekommt. Genug essen und Pausen einplanen hilft."],
+ ["stress","Viel Stress","😣","Starker Stress kann den Eisprung verschieben, dadurch kommt die Periode früher oder später. Meist normalisiert es sich, wenn der Stress nachlässt."],
+ ["food","Weniger oder anders gegessen","🍽️","Dein Körper braucht genug Energie, damit der Zyklus funktioniert. Iss regelmässig und genug, auch an Trainingstagen. Wenn Essen gerade schwierig ist, sprich mit deiner Hausärztin oder melde dich bei PEP (pep-info.ch)."],
+ ["sleep","Schlecht oder wenig geschlafen","😴","Wenig oder unregelmässiger Schlaf kann die Hormone durcheinanderbringen. Feste Schlafzeiten helfen."],
+ ["travel","Reisen oder Zeitverschiebung","✈️","Reisen und Zeitverschiebung können den Zyklus um ein paar Tage verschieben. Das ist meist einmalig."],
+ ["sick","Krank gewesen","🤒","Eine Krankheit, besonders mit Fieber, kann den Eisprung verzögern. Der nächste Zyklus ist meist wieder normal."],
+ ["meds","Pille oder Medikamente begonnen oder abgesetzt","💊","Nach dem Beginnen oder Absetzen der Pille oder anderer Medikamente braucht der Zyklus oft einige Monate, bis er sich einpendelt."],
+ ["preg","Schwangerschaft möglich","🤰","Wenn eine Schwangerschaft möglich ist, bringt ein Schwangerschaftstest Klarheit, am genauesten ab dem Tag, an dem die Periode fällig war."],
+ ["none","Nichts davon","🤷‍♀️","Manchmal gibt es keinen klaren Grund. Einzelne Ausreisser sind normal. Beobachte die nächsten Zyklen."]];
+let chk={open:false,picks:[],shown:false,err:""};
+function sig(out){let h=0;const s=out.join("|");for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return "s"+(h>>>0).toString(36)}
+function renderCheck(al,out){const sg=sig(out);const c=state.check||{};
+  if(c.sig===sg&&(c.status==="no"||(c.status==="later"&&c.until&&key(TODAY)<c.until)))return;
+  const box=el("div","chk-card");al.appendChild(box);
+  if(!chk.open){box.appendChild(el("div","cq","Möchtest du herausfinden, woran es liegen könnte?"));
+    const r=el("div","wrow");const y=el("button","btn","Ja");y.type="button";y.onclick=()=>{chk={open:true,picks:[],shown:false,err:""};render()};
+    const n=el("button","btn ghost","Nein, danke");n.type="button";n.onclick=()=>{state.check={sig:sg,status:"no"};commit()};r.appendChild(y);r.appendChild(n);box.appendChild(r);return}
+  box.appendChild(el("div","cq","Hat sich in letzter Zeit etwas verändert?"));
+  const cs=el("div","chips");WHY.forEach(([k,l])=>{const b=el("button","chip",l);b.type="button";b.setAttribute("aria-pressed",chk.picks.includes(k));
+    b.onclick=()=>{if(k==="none")chk.picks=chk.picks.includes("none")?[]:["none"];else{chk.picks=chk.picks.filter(x=>x!=="none");chk.picks=chk.picks.includes(k)?chk.picks.filter(x=>x!==k):[...chk.picks,k]}chk.err="";chk.shown=false;render()};cs.appendChild(b)});box.appendChild(cs);
+  if(chk.err)box.appendChild(el("div","jerr",chk.err));
+  if(!chk.shown){const g=el("button","btn","Mögliche Gründe zeigen");g.type="button";g.onclick=()=>{if(!chk.picks.length){chk.err="Wähl mindestens eine Antwort.";render();return}chk.shown=true;render()};box.appendChild(g);return}
+  box.appendChild(el("div","k2","Mögliche Gründe"));
+  WHY.filter(w=>chk.picks.includes(w[0])).forEach(([k,l,e,t])=>{const r=el("div","why");r.appendChild(el("div","wt2",e+" "+l));r.appendChild(el("div","muted",t));box.appendChild(r)});
+  box.appendChild(el("div","why doc","🩺 Sprich mit deiner Frauenärztin, wenn es 3 Zyklen anhält, die Periode über 90 Tage ausbleibt oder du starke Schmerzen hast. Cyra gibt mögliche Gründe, keine Diagnose."));
+  const r=el("div","wrow");const lt=el("button","btn ghost","In 1 Monat nachfragen");lt.type="button";lt.onclick=()=>{state.check={sig:sg,status:"later",until:key(add(TODAY,30)),picks:chk.picks};chk={open:false,picks:[],shown:false,err:""};commit()};
+  const ok=el("button","btn","Fertig");ok.type="button";ok.onclick=()=>{state.check={sig:sg,status:"no",picks:chk.picks};chk={open:false,picks:[],shown:false,err:""};commit()};r.appendChild(lt);r.appendChild(ok);box.appendChild(r)}
+/* ---------- Kinderwunsch ---------- */
+let wMode="",wDate=null,wVal="";
+function wishWindow(m){const t=info(TODAY,m);if(!t)return null;let ov;
+  if(!m.late&&t.d<=t.o+1)ov=add(t.start,t.o-1);else ov=add(m.next,Math.max(6,m.L-14)-1);
+  const x=info(ov,m);if(x&&x.d!==x.o)ov=add(x.start,x.o-1);return ov}
+function renderWish(m){const show=state.goal==="wish"&&state.role!=="partner"&&!state.sample;$("wishCard").hidden=!show;if(!show)return;
+  const ov=wishWindow(m);if(!ov){$("wishCard").hidden=true;return}
+  const best=[add(ov,-2),ov];const inBest=TODAY>=best[0]&&TODAY<=best[1];const before=TODAY<best[0];
+  $("wishT").textContent=inBest?"🎉 Jetzt sind deine besten Tage!":before?"Beste Tage: "+WD[new Date(best[0]).getUTCDay()]+" – "+WD[new Date(best[1]).getUTCDay()]+" (in "+days(diff(TODAY,best[0]))+")":"Deine besten Tage sind vorbei";
+  const s=$("wishStrip");s.innerHTML="";const H=state.hearts||{};let hit=0;
+  for(let i=-5;i<=1;i++){const ms=add(ov,i);const x=info(ms,m);const dd=new Date(ms);const w=document.createElement("div");w.className="wd2"+(i===0?" ov":"")+(ms===TODAY?" today":"");
+    const c=document.createElement("div");c.className="c";c.textContent=dd.getUTCDate();const f=x?x.f:0;
+    c.style.background=f===3?"var(--c-ov)":f===2?"color-mix(in srgb, var(--c-ov) 50%, transparent)":"color-mix(in srgb, var(--c-ov) 18%, transparent)";
+    const hm=document.createElement("span");hm.className="hm";hm.textContent=H[key(ms)]?"❤️":"";if(H[key(ms)]&&f===3)hit++;
+    const l=document.createElement("span");l.className="l";l.textContent=ms===TODAY?"Heute":WD[dd.getUTCDay()]+(i===0?" ✨":"");
+    w.appendChild(c);w.appendChild(l);w.appendChild(hm);w.setAttribute("aria-label",dd.getUTCDate()+". "+MON[dd.getUTCMonth()]+", Fruchtbarkeit "+FERT[f].t+(H[key(ms)]?", Herz-Tag":"")+(i===0?", Eisprung":""));s.appendChild(w)}
+  const test=add(ov,14);const tn=diff(TODAY,test);
+  const lhs=Object.keys(state.lh||{}).filter(k=>parse(k)>=add(ov,-12)&&parse(k)<=add(ov,3)).sort();
+  const parts=[];parts.push(tn>0?"Frühester Schwangerschaftstest: in "+days(tn)+" ("+fmt(test)+")":tn===0?"Ab heute ist ein Schwangerschaftstest sinnvoll.":"Ein Schwangerschaftstest ist jetzt sinnvoll, wenn die Periode ausbleibt.");
+  parts.push("❤️ "+hit+" von 3 besten Tagen");
+  if(lhs.length){const last=lhs[lhs.length-1];parts.push("Ovulationstests: "+lhs.length+" · zuletzt "+(state.lh[last]==="pos"?"positiv ➕":"negativ"))}
+  $("wishS").textContent=parts.join(" · ");
+  renderWForm()}
+function renderWForm(){const f=$("wForm");f.hidden=!wMode;f.innerHTML="";if(!wMode)return;
+  const h=el("div","",wMode==="lh"?"Ovulationstest eintragen":"Herz-Tag eintragen ❤️");h.style.fontWeight="800";f.appendChild(h);
+  const di=el("input");di.type="date";di.id="wDate";di.max=key(TODAY);di.value=key(wDate||TODAY);di.setAttribute("aria-label","Datum");di.oninput=()=>{if(di.value)wDate=parse(di.value);renderWForm()};f.appendChild(di);
+  const k=key(wDate||TODAY);
+  if(wMode==="lh"){const r=el("div","chips");[["pos","Positiv ➕"],["neg","Negativ ➖"]].forEach(([v,l])=>{const b=el("button","chip",l);b.type="button";b.setAttribute("aria-pressed",wVal===v);b.onclick=()=>{wVal=v;renderWForm()};r.appendChild(b)});f.appendChild(r);
+    if(state.lh&&state.lh[k])f.appendChild(el("div","muted","Für diesen Tag ist schon "+(state.lh[k]==="pos"?"positiv":"negativ")+" eingetragen. Speichern überschreibt es."))}
+  const er=el("div","jerr");er.hidden=true;f.appendChild(er);
+  const row=el("div","wrow");const cn=el("button","btn ghost","Abbrechen");cn.type="button";cn.onclick=()=>{wMode="";renderWForm()};
+  const has=wMode==="heart"&&state.hearts&&state.hearts[k];
+  const sv=el("button","btn",has?"Herz-Tag entfernen":"Speichern");sv.type="button";
+  sv.onclick=()=>{if(!di.value||parse(di.value)>TODAY){er.textContent="Wähl ein Datum von heute oder früher.";er.hidden=false;return}
+    if(wMode==="lh"){if(!wVal){er.textContent="Wähl positiv oder negativ.";er.hidden=false;return}state.lh=Object.assign({},state.lh||{});state.lh[k]=wVal}
+    else{state.hearts=Object.assign({},state.hearts||{});if(has)delete state.hearts[k];else state.hearts[k]=1;state.heartInfo=true}
+    const cut=key(add(TODAY,-400));["lh","hearts"].forEach(n=>{for(const d in (state[n]||{}))if(d<cut)delete state[n][d]});
+    wMode="";commit()};row.appendChild(cn);row.appendChild(sv);f.appendChild(row)}
+$("wLhBtn").onclick=()=>{wMode=wMode==="lh"?"":"lh";wDate=TODAY;wVal="";renderWForm()};
+$("wHeartBtn").onclick=()=>{wMode=wMode==="heart"?"":"heart";wDate=TODAY;renderWForm()};
+/* ---------- Cyra Duo ---------- */
+function renderDuoTip(t,m){const n=nm();let k="",tx="";
+  if(m.late){k="Periode überfällig";tx=gen(n)+" Periode ist "+days(m.late).replace("Tagen","Tage")+" zu spät. Frag einfach, wie es ihr geht."}
+  else if(t.ph==="per"){k=n+" hat ihre Periode · Tag "+t.d;tx="Sie hat wenig Energie und evtl. Schmerzen. Wärme, Ruhe und Hilfe im Alltag tun ihr gut."}
+  else if(t.ph==="fol"){k="Follikelphase · Tag "+t.d;tx=n+" hat wieder mehr Energie und Lust auf Neues. Guter Moment für gemeinsame Pläne."}
+  else if(t.ph==="ov"){k="Eisprung · Tag "+t.d;tx=state.goal==="wish"?"🎉 "+gen(n)+" fruchtbarste Tage! Die Chancen stehen jetzt am besten. 💕":state.goal==="avoid"?"🚨 "+gen(n)+" fruchtbarste Tage. Höchstes Risiko für eine Schwangerschaft.":n+" hat meist viel Energie und gute Laune. Höchstes Risiko für eine Schwangerschaft."}
+  else if(t.d<=t.len-5){k="Lutealphase · Tag "+t.d;tx=n+" ist eher ruhig und konzentriert. Gemütliche Abende passen gut."}
+  else{k="Kurz vor der Periode · Tag "+t.d;tx=n+" bekommt bald ihre Periode. Sie ist vielleicht müder oder gereizter, das ist nicht gegen dich. Sei geduldig und frag, was sie braucht."}
+  $("duoTipK").textContent=k;$("duoTipT").textContent=tx}
+let duoErrMsg="",duoStopC=false;
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function renderDuo(){const b=$("duoBody");b.innerHTML="";if(state.role==="partner")return;
+  if(!db||!uid){b.appendChild(el("p","muted",STANDALONE?"Die Partner-Funktion kommt mit der richtigen App.":"Partner-Teilen ist verfügbar, sobald Cyra online gespeichert wird."));return}
+  if(!state.duo||!state.duo.sec){
+    b.appendChild(el("p","muted","Lade deinen Partner ein. Er sieht deinen Zyklus, Fruchtbarkeit, Eisprung, Periode, deine Phase und den Kalender. Er kann nichts verändern."));
+    const lb=el("label","","Wie soll Cyra dich bei ihm nennen?");lb.htmlFor="duoName";lb.style.fontWeight="800";b.appendChild(lb);
+    const inp=el("input","duoin");inp.id="duoName";inp.type="text";inp.maxLength=30;inp.placeholder="Lea";inp.value=(state.duo&&state.duo.name)||"";inp.oninput=()=>{duoErrMsg="";er.hidden=true};b.appendChild(inp);
+    const ck=el("label","chk");const cb=el("input");cb.type="checkbox";cb.id="duoPill";cb.checked=pillOn();ck.appendChild(cb);ck.appendChild(document.createTextNode("Pille mit ihm teilen"));b.appendChild(ck);
+    const er=el("div","jerr",duoErrMsg);er.hidden=!duoErrMsg;b.appendChild(er);
+    const go=el("button","btn","Partner-Code erstellen");go.type="button";
+    go.onclick=()=>{const n=inp.value.trim();if(!n){duoErrMsg="Gib einen Namen ein.";er.textContent=duoErrMsg;er.hidden=false;return}
+      const a=new Uint8Array(12);crypto.getRandomValues(a);const sec=Array.from(a,x=>"abcdefghijkmnpqrstuvwxyz23456789"[x%32]).join("");
+      state.duo={sec,name:n,pill:cb.checked};duoErrMsg="";commit()};b.appendChild(go);return}
+  const code=uid+"."+state.duo.sec;
+  b.appendChild(el("p","muted","Dein Partner-Code:"));
+  const cbx=el("div","codebox",code);cbx.id="duoCode";b.appendChild(cbx);
+  const cp=el("button","btn","Code kopieren");cp.type="button";
+  cp.onclick=()=>{const done=()=>{cp.textContent="Kopiert ✓";setTimeout(()=>cp.textContent="Code kopieren",2000)};
+    const sel=()=>{const r=document.createRange();r.selectNodeContents(cbx);const s=getSelection();s.removeAllRanges();s.addRange(r);cp.textContent="Code markiert – jetzt kopieren"};
+    try{navigator.clipboard.writeText(code).then(done,sel)}catch(e){sel()}};b.appendChild(cp);
+  const ol=el("ol","steps");["Gib ihm Zugriff auf Cyra über das Teilen-Menü.","Er öffnet Cyra und tippt auf „Ich bin Partner“.","Er gibt den Code ein."].forEach(x=>ol.appendChild(el("li","",x)));b.appendChild(ol);
+  b.appendChild(el("p","muted","Er sieht dich als „"+state.duo.name+"“ · Pille "+(state.duo.pill?"wird geteilt":"wird nicht geteilt")+". Nur lesen."));
+  const st=el("button","btn ghost",duoStopC?"Wirklich beenden? Er sieht dann nichts mehr.":"Teilen beenden");st.type="button";
+  st.onclick=()=>{if(!duoStopC){duoStopC=true;renderDuo();return}duoStopC=false;const sec=state.duo.sec;db.doc("duo/"+uid+"/share/"+sec).delete().catch(()=>{});state.duo=null;commit()};b.appendChild(st)}
+async function joinPartner(code){const[h,s]=splitCode(code);if(!h)return"Der Code sieht nicht richtig aus. Kopiere ihn nochmal ganz.";
+  if(!db)return"Cyra kann gerade keine Verbindung aufbauen. Versuche es später nochmal.";
+  try{const sn=await db.doc("duo/"+h+"/share/"+s).get();if(!sn.exists)return"Code nicht gefunden. Prüfe ihn oder lass dir einen neuen schicken."}catch(e){return"Cyra kann den Code gerade nicht prüfen. Versuche es später nochmal."}
+  state={periods:sampleData(),goal:"",mode:"normal",sample:true,trainings:[],pill:null,onboarded:true,duo:null,role:"partner",code:code.trim(),readNotes:[]};ob=null;duoData=null;duoErr="";commit();startPartner();window.scrollTo(0,0);return""}
+$("duoExit").onclick=()=>{if(duoUnsub){duoUnsub();duoUnsub=null}duoData=null;duoErr="";state={periods:sampleData(),goal:"",mode:"normal",sample:true,trainings:[],pill:null,onboarded:false,duo:null,role:""};ob=null;commit();window.scrollTo(0,0)};
+/* ---------- Pille ---------- */
+const PILLS={"21-7":{act:21,len:28,label:"21 Tage + 7 Pause"},"24-4":{act:24,len:28,label:"24 Tage + 4 Pause"},"28":{act:28,len:28,label:"Durchgehend"},"mini":{act:28,len:28,label:"Minipille"}};
+const REM={alarm:"⏰ Wecker",notify:"🔔 Nachricht",none:"Keine Erinnerung"};
+function pillOn(){return !!(state.pill&&PILLS[state.pill.type]&&state.pill.start)}
+function packDay(ms){if(!pillOn())return null;const P=PILLS[state.pill.type];const s=parse(state.pill.start);if(ms<s)return null;const n=diff(s,ms)%P.len;return{d:n+1,active:n<P.act,P,packStart:add(ms,-n)}}
+function taken(ms){return !!(state.pill&&state.pill.taken&&state.pill.taken[key(ms)])}
+function setTaken(ms,v){state.pill.taken=state.pill.taken||{};if(v)state.pill.taken[key(ms)]=new Date().toTimeString().slice(0,5);else delete state.pill.taken[key(ms)];
+  const cut=key(add(TODAY,-120));for(const k in state.pill.taken)if(k<cut)delete state.pill.taken[k];commit()}
+function nowMin(){const n=new Date();return n.getHours()*60+n.getMinutes()}
+function tMin(t){const[a,b]=(t||"20:00").split(":").map(Number);return a*60+b}
+function pillDayStyle(b,ms){const pd=packDay(ms);if(!pd)return;
+  if(!pd.active){b.style.borderColor="var(--c-per)";b.classList.add("pred")}
+  else if(taken(ms)){b.style.background="var(--c-fol)";b.classList.add("fill")}
+  else b.style.background="color-mix(in srgb, var(--c-fol) 28%, transparent)";
+  b.setAttribute("aria-label",new Date(ms).getUTCDate()+". "+(pd.active?"Pille Tag "+pd.d+(taken(ms)?", genommen":""):"Pillenpause"))}
+function renderPill(m){
+  const on=pillOn();$("pillCard").hidden=!on;
+  const p=state.pill;
+  $("psetT").textContent=on?(PILLS[p.type].label+" · "+REM[p.remind||"none"]+(p.remind&&p.remind!=="none"?" um "+p.time+" Uhr":"")):"Du nimmst keine Pille. Du kannst das jederzeit ändern.";
+  if(!on)return;
+  const pd=packDay(TODAY);const P=PILLS[p.type];
+  if(!pd){$("pillT").textContent="Packung startet am "+fmt(parse(p.start));$("pillS").textContent="";$("pillBtn").hidden=true;return}
+  const card=$("pillCard");const tk=taken(TODAY);const due=pd.active&&!tk&&nowMin()>=tMin(p.time)&&p.remind!=="none";
+  card.classList.toggle("due",due);
+  const newPack=add(pd.packStart,P.len);
+  if(pd.active){
+    $("pillK").textContent="Pille · "+(p.remind!=="none"?REM[p.remind]+" "+p.time:"keine Erinnerung");
+    $("pillT").textContent=due?"Pille noch nicht genommen!":tk?"Heute genommen ✓":"Pille "+pd.d+" von "+P.act;
+    $("pillS").textContent=tk?"Um "+state.pill.taken[key(TODAY)]+" Uhr abgehakt.":(P.act<P.len?"Pillenpause in "+days(P.act-pd.d+1)+".":"Noch "+(P.act-pd.d)+" Pillen in dieser Packung.");
+    $("pillBtn").hidden=false;$("pillBtn").textContent=tk?"Rückgängig":"Pille genommen ✓";$("pillBtn").className=tk?"btn ghost":"btn";
+  }else{
+    $("pillK").textContent="Pillenpause";$("pillT").textContent="Pause · Tag "+(pd.d-P.act)+" von "+(P.len-P.act);
+    $("pillS").textContent="Abbruchblutung möglich. Neue Packung am "+fmt(newPack)+".";$("pillBtn").hidden=true}
+  const strip=$("pillStrip");strip.innerHTML="";for(let d=1;d<=P.len;d++){const ms=add(pd.packStart,d-1);const i=document.createElement("i");i.className=(d<=P.act?(taken(ms)?"done":"todo"):"pause")+(d===pd.d?" now":"");
+    if(d<=P.act&&ms<=TODAY&&state.role!=="partner"){i.setAttribute("role","button");i.tabIndex=0;i.style.cursor="pointer";i.setAttribute("aria-label","Pille "+d+(taken(ms)?", genommen":", nicht abgehakt"));const tg=()=>setTaken(ms,!taken(ms));i.onclick=tg;i.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tg()}}}
+    strip.appendChild(i)}
+  const yest=add(TODAY,-1),pdy=packDay(yest),missed=pdy&&pdy.active&&!taken(yest);
+  $("pillWarn").hidden=!missed;
+}
+function resetLabels(){$("ovIn").parentNode.querySelector(".l").textContent="Eisprung";$("perIn").parentNode.querySelector(".l").textContent="Periode"}
+$("pillBtn").onclick=()=>{setTaken(TODAY,!taken(TODAY));stopAlarm()};
+/* Wecker */
+let audio=null,beepT=null,snoozeUntil=0,alarmShownFor="";
+document.addEventListener("pointerdown",()=>{try{if(!audio){const A=window.AudioContext||window.webkitAudioContext;if(A)audio=new A()}if(audio&&audio.state==="suspended")audio.resume()}catch(e){}},{passive:true});
+function beep(){if(!audio)return;try{const o=audio.createOscillator(),g=audio.createGain();o.type="sine";o.frequency.value=880;g.gain.setValueAtTime(0.0001,audio.currentTime);g.gain.exponentialRampToValueAtTime(0.3,audio.currentTime+0.02);g.gain.exponentialRampToValueAtTime(0.0001,audio.currentTime+0.4);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+0.45)}catch(e){}}
+function stopAlarm(){$("alarm").hidden=true;if(beepT){clearInterval(beepT);beepT=null}}
+function checkAlarm(){if(!pillOn()||!state.onboarded)return;const p=state.pill;if(!p.remind||p.remind==="none")return;
+  const pd=packDay(TODAY);if(!pd||!pd.active||taken(TODAY))return;if(nowMin()<tMin(p.time)||Date.now()<snoozeUntil)return;
+  if(!$("alarm").hidden)return;const tag=key(TODAY)+"@"+snoozeUntil;if(alarmShownFor===tag)return;alarmShownFor=tag;
+  $("alarmT").textContent=p.remind==="alarm"?"⏰ Zeit für deine Pille":"🔔 Denk an deine Pille";$("alarmS").textContent="Pille "+pd.d+" von "+pd.P.act+" · geplant um "+p.time+" Uhr";
+  $("alarm").hidden=false;render();
+  if(p.remind==="alarm"){beep();let n=0;beepT=setInterval(()=>{beep();if(++n>40){clearInterval(beepT);beepT=null}},1500)}}
+$("alarmOk").onclick=()=>{stopAlarm();if(!taken(TODAY))setTaken(TODAY,true)};
+$("alarmSnz").onclick=()=>{stopAlarm();snoozeUntil=Date.now()+10*60000};
+setInterval(checkAlarm,15000);setTimeout(checkAlarm,1500);
+/* Einrichtung */
+let ob=null;
+function obSteps(){const s=(obRedo||STANDALONE?[]:["who"]).concat(["name","period","pill"]);if(ob.pill&&ob.pill!=="none")s.push("pack","remind");else s.push("goal");s.push("sport");return s}
+function startOnb(){const p=state.pill||{};const last=state.sample?"":(state.periods.slice().sort((a,b)=>a.s<b.s?1:-1)[0]||{}).s||"";
+  ob={i:0,name:st().name,active:state.mode==="sport"?"yes":"",sport:st().sport,period:last,pill:p.type||"",start:p.start||key(TODAY),remind:p.remind||"alarm",time:p.time||"20:00",goal:state.goal||"",err:""}}
+function opBtn(label,sub,on,fn){const b=document.createElement("button");b.type="button";b.className="op";b.setAttribute("aria-pressed",on);b.textContent=label;if(sub){const s=document.createElement("small");s.textContent=sub;b.appendChild(s)}b.onclick=fn;return b}
+function renderOnb(){
+  const show=!state.onboarded;$("onb").hidden=!show;$("app").hidden=show;if(!show)return;if(!ob)startOnb();
+  const steps=obSteps();if(ob.i>=steps.length)ob.i=steps.length-1;const st=steps[ob.i];const el=$("onb");el.innerHTML="";
+  const top=document.createElement("div");top.className="logo";top.innerHTML=document.querySelector(".logo").innerHTML;el.appendChild(top);
+  const pr=document.createElement("div");pr.className="prog";pr.style.gridTemplateColumns=`repeat(${steps.length},1fr)`;steps.forEach((x,i)=>{const b=document.createElement("i");if(i<=ob.i)b.className="on";pr.appendChild(b)});el.appendChild(pr);
+  const n=document.createElement("div");n.className="stepn";n.textContent="Schritt "+(ob.i+1)+" von "+steps.length;el.appendChild(n);
+  const h=document.createElement("h1");const sub=document.createElement("p");sub.className="sub";const body=document.createElement("div");body.className="ops";
+  if(ob.partner){pr.remove();n.remove();h.textContent="Partner-Code eingeben";sub.textContent="Den Code bekommst du von deiner Partnerin aus Cyra. Du siehst ihren Zyklus nur zum Lesen.";
+    const i=document.createElement("input");i.type="text";i.className="duoin";i.id="obCode";i.autocomplete="off";i.spellcheck=false;i.placeholder="Code hier einfügen";i.value=ob.code||"";i.setAttribute("aria-label","Partner-Code");i.oninput=()=>{ob.code=i.value;ob.err="";const e=el.querySelector(".jerr");if(e)e.remove()};body.appendChild(i);
+    el.appendChild(h);el.appendChild(sub);el.appendChild(body);
+    if(ob.err){const e=document.createElement("div");e.className="jerr";e.textContent=ob.err;el.appendChild(e)}
+    const nav=document.createElement("div");nav.className="nav";const go=document.createElement("button");go.type="button";go.className="btn";go.textContent="Verbinden";
+    go.onclick=async()=>{if(!(ob.code||"").trim()){ob.err="Füge zuerst den Code ein.";renderOnb();return}go.textContent="Wird geprüft …";const r=await joinPartner(ob.code);if(r&&ob){ob.err=r;renderOnb()}};nav.appendChild(go);
+    const bk=document.createElement("button");bk.type="button";bk.className="linkbtn";bk.textContent="Zurück";bk.onclick=()=>{ob.partner=false;ob.err="";renderOnb()};nav.appendChild(bk);el.appendChild(nav);return}
+  if(st==="name"){h.textContent="Wie heisst du?";sub.textContent="Damit Cyra dich persönlich begrüssen kann.";
+    const i=document.createElement("input");i.type="text";i.className="duoin";i.id="obName";i.maxLength=30;i.placeholder="Dein Vorname";i.value=ob.name||"";i.setAttribute("aria-label","Vorname");i.oninput=()=>{ob.name=i.value};body.appendChild(i)}
+  if(st==="sport"){h.textContent="Machst du regelmässig Sport?";sub.textContent="Dann schaltet Cyra den Sportmodus Cyra Active ein, mit Coach und Trainingsjournal.";
+    [["yes","⚡ Ja, Cyra Active einschalten","Training passend zu deinem Zyklus"],["no","Nein, eher nicht","Kannst du später unter „Ich“ einschalten"]].forEach(([v,l,s])=>body.appendChild(opBtn(l,s,ob.active===v,()=>{ob.active=v;ob.err="";renderOnb()})));
+    if(ob.active==="yes"){const lab=document.createElement("div");lab.textContent="Welche Sportart?";lab.style.cssText="font-weight:800;margin-top:6px";body.appendChild(lab);body.appendChild(chipRow(SPORTS,ob.sport,v=>{ob.sport=v;renderOnb()}))}}
+  if(st==="who"){h.textContent="Willkommen bei Cyra! Für wen nutzt du Cyra?";sub.textContent="Du kannst das später nicht verwechseln: Partner sehen nur, was ihre Partnerin teilt.";
+    body.appendChild(opBtn("🌸 Für mich","Ich möchte meinen Zyklus tracken",ob.who==="me",()=>{ob.who="me";ob.err="";renderOnb()}));
+    body.appendChild(opBtn("💑 Ich bin Partner","Ich habe einen Code von meiner Partnerin",false,()=>{ob.partner=true;ob.err="";renderOnb()}))}
+  if(st==="period"){h.textContent="Wann hat deine letzte Periode begonnen?";sub.textContent="Damit Cyra deinen Zyklus berechnen kann. Nimmst du die Pille, gib den Beginn der letzten Blutung an.";
+    const i=document.createElement("input");i.type="date";i.id="obDate";i.max=key(TODAY);i.value=ob.period;i.setAttribute("aria-label","Beginn der letzten Periode");i.oninput=()=>{ob.period=i.value;ob.err=""};body.appendChild(i)}
+  if(st==="pill"){h.textContent="Nimmst du die Pille?";sub.textContent="Dann erinnert dich Cyra und zeigt deine Packung statt Eisprung und Fruchtbarkeit.";
+    [["none","Nein",""],["21-7","Ja, 21 Tage + 7 Pause","Klassische Packung"],["24-4","Ja, 24 Tage + 4 Pause","Kürzere Pause oder Placebo-Pillen"],["28","Ja, durchgehend","Ohne Pause"],["mini","Ja, Minipille","Jeden Tag, ohne Pause"]].forEach(([v,l,s])=>body.appendChild(opBtn(l,s,ob.pill===v,()=>{ob.pill=v;ob.err="";renderOnb()})))}
+  if(st==="pack"){h.textContent="Wann hast du die aktuelle Packung begonnen?";sub.textContent="Der Tag, an dem du die erste Pille dieser Packung genommen hast.";
+    const i=document.createElement("input");i.type="date";i.id="obPack";i.max=key(TODAY);i.value=ob.start;i.setAttribute("aria-label","Beginn der Packung");i.oninput=()=>{ob.start=i.value;ob.err=""};body.appendChild(i)}
+  if(st==="remind"){h.textContent="Wie soll Cyra dich erinnern?";sub.textContent="Jeden Tag zur gleichen Uhrzeit, bis du die Pille abhakst.";
+    [["alarm","⏰ Mit Wecker","Klingelt, bis du „genommen“ tippst"],["notify","🔔 Nur Benachrichtigung","Stiller Hinweis"],["none","Keine Erinnerung","Nur abhaken in der App"]].forEach(([v,l,s])=>body.appendChild(opBtn(l,s,ob.remind===v,()=>{ob.remind=v;renderOnb()})));
+    if(ob.remind!=="none"){const lab=document.createElement("label");lab.htmlFor="obTime";lab.textContent="Uhrzeit";lab.style.cssText="font-weight:700;margin-top:6px";const t=document.createElement("input");t.type="time";t.id="obTime";t.value=ob.time;t.oninput=()=>{ob.time=t.value||"20:00"};body.appendChild(lab);body.appendChild(t)}}
+  if(st==="goal"){h.textContent="Was ist dir wichtig?";sub.textContent="Bestimmt, wie Cyra dich zum Eisprung informiert. Jederzeit änderbar.";
+    [["wish","💕 Kinderwunsch","Cyra hebt deine fruchtbaren Tage hervor"],["avoid","🛡️ Schwangerschaft vermeiden","Cyra warnt dich an fruchtbaren Tagen"]].forEach(([v,l,s])=>body.appendChild(opBtn(l,s,ob.goal===v,()=>{ob.goal=v;renderOnb()})))}
+  el.appendChild(h);el.appendChild(sub);el.appendChild(body);
+  if(ob.err){const e=document.createElement("div");e.className="jerr";e.textContent=ob.err;el.appendChild(e)}
+  const nav=document.createElement("div");nav.className="nav";
+  const last=ob.i===steps.length-1;const go=document.createElement("button");go.type="button";go.className="btn";go.textContent=last?"Los geht’s":"Weiter";
+  go.onclick=()=>{if(st==="who"&&ob.who!=="me"){ob.err="Wähl eine Antwort.";renderOnb();return}if(st==="pill"&&!ob.pill){ob.err="Wähl eine Antwort oder tippe auf Überspringen.";renderOnb();return}
+    if(st==="pack"&&(!ob.start||parse(ob.start)>TODAY)){ob.err="Wähl ein Datum von heute oder früher.";renderOnb();return}
+    if(st==="period"&&ob.period&&parse(ob.period)>TODAY){ob.err="Das Datum liegt in der Zukunft.";renderOnb();return}
+    if(last)finishOnb();else{ob.i++;ob.err="";renderOnb()}};nav.appendChild(go);
+  const sk=document.createElement("button");sk.type="button";sk.className="linkbtn";sk.textContent="Überspringen";
+  sk.onclick=()=>{if(st==="period")ob.period="";if(st==="pill")ob.pill="none";if(st==="remind")ob.remind="none";if(st==="goal")ob.goal="";if(st==="pack")ob.start=key(TODAY);if(last)finishOnb();else{ob.i++;ob.err="";renderOnb()}};if(st!=="who")nav.appendChild(sk);
+  if(ob.i>0){const bk=document.createElement("button");bk.type="button";bk.className="linkbtn";bk.textContent="Zurück";bk.onclick=()=>{ob.i--;ob.err="";renderOnb()};nav.appendChild(bk)}
+  if(obRedo){const ex=document.createElement("button");ex.type="button";ex.className="btn ghost";ex.textContent="Abbrechen, zurück zu Ich";ex.onclick=()=>{obRedo=false;ob=null;state.onboarded=true;render();goTab("ich")};nav.appendChild(ex)}
+  el.appendChild(nav);
+}
+function finishOnb(){
+  if(ob.period){const k=ob.period;if(state.sample){state.periods=[];state.sample=false}if(!state.periods.some(p=>p.s===k))state.periods.push({s:k})}
+  if(ob.pill&&ob.pill!=="none")state.pill={type:ob.pill,start:ob.start,remind:ob.remind,time:ob.time,taken:(state.pill&&state.pill.taken)||{}};else state.pill=null;
+  if(!state.pill)state.goal=ob.goal;
+  state.settings=Object.assign(st(),{name:(ob.name||"").trim(),sport:ob.active==="yes"?(ob.sport||""):st().sport});state.mode=ob.active==="yes"?"sport":"normal";tab="heute";
+  state.onboarded=true;ob=null;obRedo=false;resetLabels();commit();window.scrollTo(0,0)}
+$("redoOnb").onclick=()=>{obRedo=true;state.onboarded=false;ob=null;render();window.scrollTo(0,0)};
+/* ---------- Trainingsjournal ---------- */
+const PHK=["per","fol","ov","lut"];
+let draft=null;
+function scaleInit(id){const el=$(id);el.innerHTML="";for(let i=1;i<=5;i++){const b=document.createElement("button");b.type="button";b.textContent=i;b.dataset.v=i;b.setAttribute("aria-pressed","false");b.setAttribute("aria-label",el.dataset.k+" "+i);
+  b.onclick=()=>{draft[el.dataset.k]=i;[...el.children].forEach(x=>x.setAttribute("aria-pressed",+x.dataset.v===i));$("jErr").hidden=true};el.appendChild(b)}}
+["jPow","jPerf","jSQ"].forEach(scaleInit);
+function openForm(){draft={type:"Training",power:0,perf:0,sleepQ:0,pains:[]};
+  $("jDate").value=key(TODAY);$("jDate").max=key(TODAY);$("jDur").value="";$("jEff").value=6;$("jEffV").textContent="6";$("jSleep").value="";$("jNote").value="";
+  document.querySelectorAll("#jForm .scale button").forEach(b=>b.setAttribute("aria-pressed","false"));
+  document.querySelectorAll("#jType .chip").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v==="Training"));
+  document.querySelectorAll("#jPain .chip").forEach(b=>b.setAttribute("aria-pressed","false"));
+  $("jErr").hidden=true;$("jForm").hidden=false;$("jOpen").hidden=true}
+function closeForm(){$("jForm").hidden=true;$("jOpen").hidden=false;draft=null}
+$("jOpen").onclick=openForm;$("jCancel").onclick=closeForm;
+$("jEff").oninput=()=>{$("jEffV").textContent=$("jEff").value};
+document.querySelectorAll("#jType .chip").forEach(b=>b.onclick=()=>{draft.type=b.dataset.v;document.querySelectorAll("#jType .chip").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+document.querySelectorAll("#jPain .chip").forEach(b=>b.onclick=()=>{const on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",on);const v=b.dataset.v;draft.pains=on?[...draft.pains,v]:draft.pains.filter(x=>x!==v)});
+$("jForm").onsubmit=e=>{e.preventDefault();
+  const date=$("jDate").value;
+  if(!date||parse(date)>TODAY){$("jErr").textContent="Wähl ein Datum von heute oder früher.";$("jErr").hidden=false;return}
+  if(!draft.power||!draft.perf){$("jErr").textContent="Gib noch Kraft und Leistung an (1–5).";$("jErr").hidden=false;return}
+  const sl=parseFloat($("jSleep").value);
+  const e2={id:Date.now().toString(36),date,type:draft.type,dur:parseInt($("jDur").value)||null,effort:+$("jEff").value,power:draft.power,perf:draft.perf,sleepH:isNaN(sl)?null:Math.round(sl*2)/2,sleepQ:draft.sleepQ||null,pains:draft.pains,note:$("jNote").value.trim().slice(0,500)};
+  state.trainings=[...(state.trainings||[]),e2];closeForm();commit()};
+function exampleTrainings(m){const out=[];let k=0;for(let i=-60;i<=-1;i+=3){const ms=add(TODAY,i);const x=info(ms,m);if(!x)continue;const s=score(x);const j=[0,.3,-.3,.2,-.2][k++%5];
+  const p=Math.max(1,Math.min(5,Math.round(s/20+j)));out.push({date:key(ms),perf:p,power:Math.max(1,Math.min(5,Math.round(s/20-j))),sleepH:x.ph==="lut"||x.ph==="per"?6.5+j:7.5+j,type:"Training"})}return out}
+function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:null}
+function renderJournal(m){
+  const sport=state.mode==="sport";$("journal").hidden=!sport;$("tStats").hidden=!sport;if(!sport)return;
+  const real=(state.trainings||[]).slice().sort((a,b)=>a.date<b.date?1:-1);
+  const list=$("jList");list.innerHTML="";
+  if(!real.length){const p=document.createElement("p");p.className="muted";p.style.margin="8px 0 0";p.textContent="Trag nach jedem Training kurz ein, wie es lief. Nach ein paar Wochen siehst du, in welcher Phase du am stärksten bist.";list.appendChild(p)}
+  real.slice(0,6).forEach(e=>{const x=info(parse(e.date),m);const r=document.createElement("div");r.className="entry";
+    const dot=document.createElement("span");dot.className="dot";dot.style.background=x?`var(${PH[x.ph].col})`:"var(--line)";r.appendChild(dot);
+    const mid=document.createElement("div");const t1=document.createElement("div");t1.textContent=e.type+(e.dur?" · "+e.dur+" Min.":"");const t2=document.createElement("div");t2.className="ed";t2.textContent=fmt(parse(e.date))+(x?" · "+PH[x.ph].name:"")+(e.pains&&e.pains.length?" · "+e.pains.join(", "):"");mid.appendChild(t1);mid.appendChild(t2);r.appendChild(mid);
+    const pf=document.createElement("span");pf.className="perf";pf.textContent="Leistung "+e.perf;r.appendChild(pf);
+    const del=document.createElement("button");del.type="button";del.className="del";del.textContent="×";del.setAttribute("aria-label","Eintrag löschen");
+    del.onclick=()=>{if(del.dataset.c){state.trainings=state.trainings.filter(q=>q.id!==e.id);commit()}else{del.dataset.c="1";del.textContent="Löschen?";del.style.fontSize="13px";del.style.color="var(--slow)"}};r.appendChild(del);list.appendChild(r)});
+  // stats
+  const isEx=real.length<1;const data=isEx?exampleTrainings(m):real;
+  $("tStatEx").hidden=!isEx;
+  const by={per:[],fol:[],ov:[],lut:[]};const pts=[];
+  data.forEach(e=>{const x=info(parse(e.date),m);if(!x)return;by[x.ph].push(e);pts.push({d:Math.min(x.d,m.L),perf:e.perf,ph:x.ph})});
+  const rows=PHK.map(k=>({k,n:by[k].length,pow:avg(by[k].map(e=>e.power)),perf:avg(by[k].map(e=>e.perf)),sl:avg(by[k].filter(e=>e.sleepH!=null).map(e=>e.sleepH))}));
+  const withData=rows.filter(r=>r.n);const best=withData.length?withData.reduce((a,b)=>b.perf>a.perf?b:a):null;
+  $("tStatHead").textContent=best&&data.length>=3?"Am stärksten bist du "+(best.k==="ov"?"um den Eisprung":best.k==="per"?"während der Periode":"in der "+PH[best.k].name):"Deine Trainings-Statistik";
+  const f1=v=>v==null?"–":v.toFixed(1);
+  let h="<thead><tr><th>Phase</th><th>Kraft</th><th>Leistung</th><th>Schlaf</th><th>Trainings</th></tr></thead><tbody>";
+  rows.forEach(r=>{h+=`<tr class="${best&&r.k===best.k&&data.length>=3?"best":""}"><td><span class="dot" style="background:var(${PH[r.k].col});margin-right:6px"></span>${PH[r.k].name.replace("phase","")}</td><td>${f1(r.pow)}</td><td>${f1(r.perf)}</td><td>${r.sl==null?"–":r.sl.toFixed(1)+" h"}</td><td>${r.n}</td></tr>`});
+  $("tStatTab").innerHTML=h+"</tbody>";
+  // curve
+  const L=m.L,o=Math.max(6,L-14),pl=m.PL;const X=d=>20+(d-0.5)/L*290,Y=v=>116-(v-1)*25;
+  let s="";const band=(a,b,k)=>{if(b<a)return;s+=`<rect x="${X(a-0.5).toFixed(1)}" y="8" width="${(X(b+0.5)-X(a-0.5)).toFixed(1)}" height="108" fill="color-mix(in srgb, var(${PH[k].col}) 22%, transparent)"/>`};
+  band(1,pl,"per");band(pl+1,o-2,"fol");band(o-1,o+1,"ov");band(o+2,L,"lut");
+  [1,2,3,4,5].forEach(v=>{s+=`<line x1="20" x2="310" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1"/><text x="12" y="${Y(v)+4}" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="Nunito,sans-serif">${v}</text>`});
+  const bins=[];for(let b=1;b<=L;b+=3){const inb=pts.filter(p=>p.d>=b&&p.d<b+3);if(inb.length)bins.push([X(b+1),Y(avg(inb.map(p=>p.perf)))])}
+  if(bins.length>=2){let d=`M${bins[0][0].toFixed(1)} ${bins[0][1].toFixed(1)}`;for(let i=0;i<bins.length-1;i++){const p0=bins[i-1]||bins[i],p1=bins[i],p2=bins[i+1],p3=bins[i+2]||p2;
+    d+=` C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)} ${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)} ${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`}
+    s+=`<path d="${d}" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>`}
+  pts.forEach(p=>{s+=`<circle cx="${X(p.d).toFixed(1)}" cy="${Y(p.perf)}" r="4.5" fill="var(${PH[p.ph].col})" stroke="var(--surface)" stroke-width="1.5"/>`});
+  [[1,"Tag 1"],[o,"Eisprung"],[L,"Tag "+L]].forEach(([d,t],i)=>{s+=`<text x="${X(d).toFixed(1)}" y="136" text-anchor="${i===0?"start":i===2?"end":"middle"}" font-size="11" font-weight="700" fill="var(--muted)" font-family="Nunito,sans-serif">${t}</text>`});
+  $("tStatCurve").innerHTML=s;
+  $("tStatNote").textContent=isEx?"So sieht deine Auswertung aus, sobald du Trainings einträgst. Jeder Punkt ist ein Training, die Linie zeigt den Verlauf.":(data.length<8?"Noch wenige Einträge – nach 2–3 Zyklen wird die Auswertung aussagekräftig.":"Jeder Punkt ist ein Training, die Linie zeigt deinen Durchschnitt.");
+}
+function days(n){return n===1?"1 Tag":n+" Tagen"}
+
+function normalizePeriods(){if(!state.periods||state.periods.length<2)return;const a=state.periods.slice().sort((x,y)=>x.s<y.s?-1:1);const out=[Object.assign({},a[0])];
+  for(let i=1;i<a.length;i++){const c=out[out.length-1],n=a[i];const cEnd=parse(c.e||c.s);if(parse(n.s)<=add(cEnd,2)){const ne=n.e?parse(n.e):parse(n.s);if(!c.e&&!n.e){}else if(ne>cEnd||!c.e)c.e=key(Math.max(ne,cEnd));if(!n.e&&parse(n.s)>cEnd)delete c.e}else out.push(Object.assign({},n))}
+  if(out.length!==state.periods.length)state.periods=out}
+function render(){
+  if(!state.sample&&state.role!=="partner")normalizePeriods();
+  const isP=state.role==="partner";document.body.classList.toggle("partner",isP);
+  const wait=isP&&!duoData;document.body.classList.toggle("duowait",wait);
+  $("duoMsg").hidden=!wait;if(wait)$("duoMsg").textContent=duoErr==="ended"?"Das Teilen wurde beendet oder der Code stimmt nicht mehr. Bitte um einen neuen Code.":duoErr==="error"?"Cyra kann die Daten gerade nicht laden. Versuche es später nochmal.":duoErr==="slow"?"Die Daten lassen sich gerade nicht erreichen. Prüfe deine Verbindung.":"Daten werden geladen …";
+  $("duoHd").hidden=!isP;$("duoLeave").hidden=!isP;$("duoTip").hidden=!isP||wait;
+  if(isP){$("duoHd").textContent=gen(nm())+" Zyklus";$("duoLeaveT").textContent="Du siehst "+gen(nm())+" Zyklus nur zum Lesen. "+nm()+" bestimmt, was du siehst.";$("saveNote").textContent="Partner-Ansicht · nur lesen"}
+  renderDuo();
+  document.body.classList.toggle("sport",state.mode==="sport");
+  $("mNormal").setAttribute("aria-pressed",state.mode!=="sport");$("mSport").setAttribute("aria-pressed",state.mode==="sport");
+  $("sample").hidden=!state.sample;
+  const m=model();const t=info(TODAY,m);
+  renderRing(t);
+  if(t){
+    const dueToday=!m.late&&m.next===TODAY&&recordedPeriodAt(TODAY,m)<0;
+    $("cday").textContent=(m.late||dueToday)?"Tag "+(diff(m.last,TODAY)+1):"Tag "+t.d;
+    $("cphase").textContent=m.late?PH.lut.name:dueToday?"Periode heute erwartet":PH[t.ph].name+" · von "+t.len;
+    $("lateNote").hidden=!m.late;if(m.late)$("lateNote").textContent="⚠ Du hättest deine Periode vor "+days(m.late)+" bekommen sollen. Du bist überfällig.";
+    $("pLate").hidden=!m.late;
+    fertBlock($("fert"),t.f,"Fruchtbarkeit heute","");$("fert").hidden=!(state.role==="partner"||st().showFert);
+    const unc=m.spread>=2?" ± "+Math.ceil(m.spread/2)+" Tage":(m.cycles.length<3?" (noch ungenau)":"");
+    let ovDay;if(!m.late&&t.d<=t.o)ovDay=add(t.start,t.o-1);else ovDay=add(m.next,Math.max(6,m.L-14)-1);
+    const ovN=diff(TODAY,ovDay);
+    $("ovIn").textContent=ovN===0?"Heute":"in "+days(ovN);$("ovDate").textContent=fmt(ovDay)+unc;
+    if(m.late){$("perIn").textContent="Überfällig";$("perDate").textContent="seit "+days(m.late)}
+    else{const pn=diff(TODAY,m.next);$("perIn").textContent="in "+days(pn);$("perDate").textContent=fmt(m.next)+unc}
+    const k=t.ph,p=PH[k];
+    $("pdot").style.background=`var(${p.col})`;$("pname").textContent=p.name+" · Tag "+t.d;
+    let lead=p.lead;
+    if(k==="ov"&&t.d===t.o){lead=state.goal==="wish"?"🎉💕 Heute ist DEIN Tag! Dein Eisprung ist da und deine Chancen sind jetzt am allerhöchsten. 🍀✨":state.goal==="avoid"?"🚨⚠️ Achtung, heute ist dein Eisprung! Du kannst jetzt sehr leicht schwanger werden. 🛑":"Heute ist dein Eisprung. Du hast wahrscheinlich viel Energie. Heute ist eine Schwangerschaft am wahrscheinlichsten."}
+    renderTrain(t,m);
+    if(isP&&!wait)renderDuoTip(t,m);
+    $("plead").textContent=lead;dl($("peat"),p.eat);dl($("pcare"),p.care);dl($("ptrain"),p.train);dl($("pbody"),p.body);
+    $("trainBox").hidden=state.mode!=="sport";
+    const inRec=recordedPeriodAt(TODAY,m);const P=m.P;
+    if(!state.sample&&inRec>=0&&!P[inRec].e&&P[inRec].s!==key(TODAY)){$("quick").textContent="Periode ist heute zu Ende";$("quick").dataset.a="end"}
+    else if(!state.sample&&inRec>=0){$("quick").textContent="Periode eingetragen ✓";$("quick").dataset.a="none"}
+    else{$("quick").textContent="Periode hat heute begonnen";$("quick").dataset.a="start"}
+  }
+  // week
+  const w=$("week");w.innerHTML="";
+  for(let i=0;i<7;i++){const ms=add(TODAY,i);const x=info(ms,m);const dd=new Date(ms);
+    const el=document.createElement("div");el.className="wd"+(i===0?" today":"");
+    const c=document.createElement("div");c.className="c";c.textContent=dd.getUTCDate();
+    if(x){c.style.background=x.f===3||x.ph==="ov"?"var(--c-ov)":`var(${PH[x.ph].col})`;}
+    el.appendChild(c);const l=document.createElement("span");l.textContent=i===0?"Heute":WD[dd.getUTCDay()];el.appendChild(l);
+    el.title=x?PH[x.ph].name:"";w.appendChild(el)}
+  renderCal(m);renderStats(m);renderJournal(m);renderPill(m);renderNotes(m);renderWish(m);renderSettings(m);renderOnb();renderTabs();applyTheme();renderLock();
+  document.querySelectorAll("#goals .chip").forEach(b=>b.setAttribute("aria-pressed",b.dataset.g===(state.goal||"")));
+  $("goalAsk").hidden=!goalAsk;
+  $("goalMsg").textContent=goalInfo?"Okay. Kinderwunsch kannst du auswählen, sobald du die Pille abgesetzt hast. Sprich vorher am besten mit deiner Frauenärztin.":state.goal==="avoid"?"Die Vorhersage ist eine Schätzung. Für sichere Verhütung bitte zusätzlich verhüten.":state.goal==="wish"?"Cyra hebt deine fruchtbaren Tage besonders hervor.":"";
+}
+
+function renderCal(m){const SF=state.role==="partner"||st().showFert;
+  const d0=new Date(viewMonth);const y=d0.getUTCFullYear(),mo=d0.getUTCMonth();
+  $("mlabel").textContent=MON[mo]+" "+y;
+  const cal=$("cal");cal.innerHTML="";
+  ["Mo","Di","Mi","Do","Fr","Sa","So"].forEach(h=>{const e=document.createElement("div");e.className="h";e.textContent=h;cal.appendChild(e)});
+  const first=(d0.getUTCDay()+6)%7;for(let i=0;i<first;i++)cal.appendChild(document.createElement("div"));
+  const dim=new Date(Date.UTC(y,mo+1,0)).getUTCDate();
+  for(let n=1;n<=dim;n++){const ms=Date.UTC(y,mo,n);const x=info(ms,m);
+    const b=document.createElement("button");b.type="button";b.className="day";b.textContent=n;b.id="d-"+key(ms);
+    if(x){const rec=recordedPeriodAt(ms,m)>=0;
+      const ri=recordedPeriodAt(ms,m);const pp=ri>=0?m.P[ri]:null;const conf=pp&&ms<=TODAY&&(pp.e||pp.s===key(ms)||(state.dayAns||{})[key(ms)]==="y");
+      if(x.isPer&&conf){b.style.background="var(--c-per)";b.classList.add("fill")}
+      else if(x.isPer){b.style.borderColor="var(--c-per)";b.classList.add("pred")}
+      else if(SF&&x.f===3){b.style.background="var(--c-ov)";b.classList.add("fill")}
+      else if(SF&&x.f===2){b.style.background="color-mix(in srgb, var(--c-ov) 45%, transparent)"}
+      else b.style.background=`color-mix(in srgb, var(${PH[x.ph].col}) 30%, transparent)`;
+      if(x.d===x.o){const o=document.createElement("span");o.className="ov";b.appendChild(o)}
+      if(state.role!=="partner"&&state.hearts&&state.hearts[key(ms)]){const h=document.createElement("span");h.className="hrt";h.textContent="❤️";h.setAttribute("aria-hidden","true");b.appendChild(h)}
+      b.setAttribute("aria-label",n+". "+MON[mo]+", "+PH[x.ph].name+", Fruchtbarkeit "+FERT[x.f].t)}
+    if(ms===TODAY)b.classList.add("today");if(ms===selected)b.classList.add("sel");
+    b.onclick=()=>{selected=ms;renderCal(m);renderSheet(ms,m)};
+    cal.appendChild(b)}
+  if(selected!==null)renderSheet(selected,m);
+}
+function renderSheet(ms,m){
+  const sh=$("sheet");sh.hidden=false;sh.innerHTML="";const x=info(ms,m);
+  const h=document.createElement("h3");h.textContent=fmt(ms);sh.appendChild(h);
+  const p=document.createElement("div");p.className="muted";
+  p.textContent=x?(PH[x.ph].name+" · Zyklustag "+x.d):"Vor deinem ersten Eintrag.";sh.appendChild(p);
+  if(x&&(state.role==="partner"||st().showFert)){const fb=document.createElement("div");fb.className="fertbox";fertBlock(fb,x.f,"Fruchtbarkeit",ms>TODAY?"Vorhersage":"");sh.appendChild(fb)}
+  if(ms>TODAY){const n=document.createElement("div");n.className="muted";n.textContent="Einträge sind nur für heute und vergangene Tage möglich.";sh.appendChild(n);return}
+  const row=document.createElement("div");row.className="row";
+  const rec=recordedPeriodAt(ms,m);
+  const mk=(txt,ghost,fn)=>{const b=document.createElement("button");b.type="button";b.className="btn"+(ghost?" ghost":"");b.textContent=txt;b.onclick=fn;row.appendChild(b)};
+  {const pv=perVal(ms,m);const q=el("div","perq row");q.appendChild(el("div","pq",ms===TODAY?"Hast du heute deine Periode?":"Hattest du an diesem Tag deine Periode?"));
+    const w=el("div","wrow");const y=el("button","btn ghost yn yes","🩸 Ja");y.type="button";y.setAttribute("aria-pressed",pv.ans==="y");y.onclick=()=>setPeriodDay(ms,true);
+    const n=el("button","btn ghost yn no","Nein");n.type="button";n.setAttribute("aria-pressed",pv.ans==="n");n.onclick=()=>setPeriodDay(ms,false);w.appendChild(y);w.appendChild(n);q.appendChild(w);sh.appendChild(q)}
+  if(pillOn()){const pd=packDay(ms);if(pd&&pd.active){const tk=taken(ms);mk(tk?"💊 Pille genommen ✓":"💊 Pille "+pd.d+" abhaken",!tk,()=>setTaken(ms,!tk))}}
+  if(state.role!=="partner"){const hk=!!(state.hearts&&state.hearts[key(ms)]);
+    if(!state.heartInfo){const inf=el("div","heartinfo");inf.appendChild(el("b","","❤️ Was ist ein Herz-Tag?"));inf.appendChild(el("div","","Damit trägst du ein, an welchen Tagen du Sex hattest. Das hilft z. B. bei Kinderwunsch oder wenn die Periode ausbleibt. Nur für dich sichtbar, auch dein Partner sieht es nicht."));sh.appendChild(inf)}
+    mk(hk?"❤️ Herz-Tag ✓":"❤️ Herz-Tag",!hk,()=>toggleHeart(ms))}
+  sh.appendChild(row);
+}
+function toggleHeart(ms){const k=key(ms);state.hearts=Object.assign({},state.hearts||{});if(state.hearts[k])delete state.hearts[k];else state.hearts[k]=1;state.heartInfo=true;commit()}
+function startPeriod(ms){
+  if(state.sample){state.periods=[];state.sample=false}
+  const k=key(ms);if(!state.periods.some(p=>p.s===k))state.periods.push({s:k});
+  commit();
+}
+function commit(){save();render()}
+
+function renderStats(m){
+  const real=!state.sample;
+  $("sLen").textContent=m.cycles.length?m.L:"–";$("sPer").textContent=m.P.length?m.PL:"–";$("sCnt").textContent=m.cycles.length;
+  const al=$("alerts");al.innerHTML="";const out=[];
+  const rc=m.cycles.slice(-6);
+  if(rc.some(c=>c<21))out.push("Ein Zyklus war kürzer als 21 Tage. Das kann harmlose Gründe haben, zum Beispiel Stress. Bleibt es so, sprich es bei deiner Frauenärztin an.");
+  if(rc.some(c=>c>35))out.push("Ein Zyklus war länger als 35 Tage. Häufige Gründe sind Stress, viel Training oder weniger Essen. Hält es an, lass es ärztlich abklären.");
+  if(rc.length>=3&&m.spread>8)out.push("Deine Zykluslänge schwankt stark (um "+m.spread+" Tage). Die Vorhersage ist dadurch ungenauer.");
+  if(m.P.some(p=>p.e&&diff(parse(p.s),parse(p.e))+1>7))out.push("Eine Periode dauerte länger als 7 Tage. Sprich das bei deinem nächsten Termin an.");
+  if(m.last!==null&&diff(m.last,TODAY)>90)out.push("Deine Periode ist seit über 90 Tagen ausgeblieben. Bitte lass das ärztlich abklären, ein Schwangerschaftstest bringt zusätzlich Klarheit.");
+  else if(m.late>=5)out.push("Deine Periode ist "+m.late+" Tage zu spät. Wenn eine Schwangerschaft möglich ist, bringt ein Test Klarheit.");
+  if(real)out.forEach(t=>{const d=document.createElement("div");d.className="alert";d.textContent=t;al.appendChild(d)});
+  if(real&&out.length&&state.role!=="partner")renderCheck(al,out);
+  if(!out.length||!real){const d=document.createElement("div");d.className="muted";d.textContent=m.cycles.length<3?"Nach 3 erfassten Zyklen werden Vorhersage und Hinweise genauer.":"Keine Auffälligkeiten in deinen letzten Zyklen.";al.appendChild(d)}
+}
+
+$("quick").onclick=()=>{const a=$("quick").dataset.a;const m=model();
+  if(a==="start")startPeriod(TODAY);
+  else if(a==="end"){const i=recordedPeriodAt(TODAY,m);if(i>=0){m.P[i].e=key(TODAY);commit()}}};
+function perVal(ms,m){const k=key(ms);const inPer=!state.sample&&recordedPeriodAt(ms,m)>=0;const a=(state.dayAns||{})[k];return{inPer,ans:a||(ms<TODAY?(inPer?"y":""):"")}}
+function setPeriodDay(ms,yes){
+  if(state.sample){state.periods=[];state.sample=false}
+  const k=key(ms);const m=model();
+  state.dayAns=Object.assign({},state.dayAns||{});state.dayAns[k]=yes?"y":"n";const cut=key(add(TODAY,-60));for(const d in state.dayAns)if(d<cut)delete state.dayAns[d];
+  const P=state.periods;const ri=recordedPeriodAt(ms,m);const rp=ri>=0?m.P[ri]:null;const srt=P.slice().sort((a,b)=>a.s<b.s?-1:1);
+  if(yes){if(!rp){const prev=srt.filter(q=>q.s<k).slice(-1)[0];const next=srt.filter(q=>q.s>k)[0];
+      if(prev&&diff(parse(prev.s),ms)<=12)prev.e=k;
+      else if(next&&diff(ms,parse(next.s))<=2)next.s=k;
+      else P.push({s:k})}}
+  else if(rp){if(rp.s===k){const e=rp.e?parse(rp.e):null;if(e&&e>ms)rp.s=key(add(ms,1));else state.periods=P.filter(q=>q!==rp)}else rp.e=key(add(ms,-1))}
+  commit()}
+$("mNormal").onclick=()=>{state.mode="normal";commit()};$("mSport").onclick=()=>{const was=state.mode==="sport";state.mode="sport";commit();if(!was)goTab("active")};
+const THISM=Date.UTC(new Date(TODAY).getUTCFullYear(),new Date(TODAY).getUTCMonth(),1);
+function goMonth(delta){const d=new Date(viewMonth);viewMonth=delta===0?THISM:Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+delta,1);selected=null;$("sheet").hidden=true;renderCal(model());
+  const c=$("cal");c.classList.remove("slide-l","slide-r");void c.offsetWidth;c.classList.add(delta>0?"slide-l":"slide-r");$("calToday").hidden=viewMonth===THISM}
+$("prev").onclick=()=>goMonth(-1);$("next").onclick=()=>goMonth(1);
+$("calToday").onclick=()=>{const dir=viewMonth>THISM?-1:1;goMonth(0);const c=$("cal");c.classList.remove("slide-l","slide-r");void c.offsetWidth;c.classList.add(dir>0?"slide-l":"slide-r")};
+(function(){let x0=null,y0=null;const c=$("cal");c.addEventListener("touchstart",e=>{const t=e.touches[0];x0=t.clientX;y0=t.clientY},{passive:true});
+  c.addEventListener("touchend",e=>{if(x0===null)return;const t=e.changedTouches[0];const dx=t.clientX-x0,dy=t.clientY-y0;x0=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5)goMonth(dx<0?1:-1)},{passive:true})})();
+document.querySelectorAll("#goals .chip").forEach(b=>b.onclick=()=>{const g=b.dataset.g;goalInfo=false;if(g==="wish"&&pillOn()){goalAsk=true;render();return}goalAsk=false;state.goal=g;commit()});
+$("gaYes").onclick=()=>{goalAsk=false;state.pill=null;state.goal="wish";commit()};$("gaNo").onclick=()=>{goalAsk=false;goalInfo=true;render()};
+render();
+})();
+</script>
+
+</body>
+</html>
